@@ -19,7 +19,8 @@ class GuruDashboardController extends Controller
         $guru = Auth::user()->guru;
 
         // --- Bagian 1: Jadwal Hari Ini (Tidak berubah) ---
-        $namaHariIni = Carbon::now()->translatedFormat('l');
+        // Set locale to Indonesian and get day name
+        $namaHariIni = Carbon::now()->locale('id')->isoFormat('dddd');
         $jadwalHariIni = JadwalPelajaran::where('guru_id', $guru->guru_id)
             ->where('hari', $namaHariIni)
             ->with(['kelas', 'mataPelajaran'])

@@ -22,6 +22,6 @@ class AbsensiHarian extends Model
      */
     public function siswa()
     {
-        return $this->belongsTo(Siswa::class, 'siswa_id');
+        return $this->belongsTo(Siswa::class, 'siswa_id', 'siswa_id'); // <-- Pastikan foreign key-nya juga benar
     }
 }

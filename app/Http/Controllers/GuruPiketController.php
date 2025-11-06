@@ -196,7 +196,7 @@ class GuruPiketController extends Controller
             ],
             [
                 'status' => 'Izin',
-                'waktu_masuk' => null // Izin tidak memiliki jam masuk
+                'waktu_masuk' => Carbon::now()->toTimeString()
             ]
         );
 
