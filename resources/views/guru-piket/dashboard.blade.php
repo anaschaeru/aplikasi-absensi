@@ -264,15 +264,25 @@
             }
 
             function onScanFailure(error) {
-                /* Biarkan scanner terus berjalan */ }
+                /* Biarkan scanner terus berjalan */
+            }
 
-            let html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-                fps: 10,
-                qrbox: {
-                    width: 200,
-                    height: 200
-                }
-            });
+            let html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader", {
+                    fps: 10,
+                    qrbox: {
+                        width: 200,
+                        height: 200
+                    },
+                    aspectRatio: 1.0, // Memaksa rasio kotak 1:1
+                    disableFlip: false, // Coba ubah true jika kamera terbalik
+                    experimentalFeatures: {
+                        useBarCodeDetectorIfSupported: true
+                    }
+                },
+                /* verbose= */
+                false
+            );
             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
         </script>
 
