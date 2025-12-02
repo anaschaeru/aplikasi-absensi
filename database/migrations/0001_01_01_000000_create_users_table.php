@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
-            $table->enum('role', ['admin', 'guru', 'guru_piket', 'siswa'])->default('siswa'); // TAMBAHKAN INI
+            $table->enum('role', ['admin', 'guru', 'guru_piket', 'siswa', 'walikelas'])->default('siswa'); // TAMBAHKAN INI
             $table->timestamps();
         });
 

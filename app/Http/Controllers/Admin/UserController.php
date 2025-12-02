@@ -41,7 +41,7 @@ class UserController extends Controller
     {
         // Validasi input untuk memastikan role yang dikirim adalah salah satu dari daftar yang diizinkan
         $validated = $request->validate([
-            'role' => ['required', Rule::in(['admin', 'guru', 'guru_piket', 'siswa'])],
+            'role' => ['required', Rule::in(['admin', 'guru', 'guru_piket', 'siswa', 'walikelas'])],
         ]);
 
         $user->update([
