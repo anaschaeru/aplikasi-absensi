@@ -8,6 +8,7 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GuruPiketController;
+use App\Http\Controllers\WalikelasController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Siswa\IzinController;
 use App\Http\Controllers\RekapAbsensiController;
@@ -39,9 +40,10 @@ Route::get('/dashboard', function () {
         case 'admin':
             return redirect()->route('admin.dashboard');
             break;
+        case 'walikelas':
+            return redirect()->route('walikelas.dashboard');
         case 'guru':
         case 'guru_piket':
-        case 'walikelas':
             return redirect()->route('guru.dashboard');
             break;
         case 'siswa':
@@ -94,7 +96,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // =====================================================================
 // GRUP ROUTE KHUSUS GURU & GURU PIKET
 // =====================================================================
-Route::middleware(['auth', 'role:guru,guru_piket,walikelas'])->prefix('guru')->name('guru.')->group(function () {
+Route::middleware(['auth', 'role:admin,guru,guru_piket,walikelas'])->prefix('guru')->name('guru.')->group(function () {
     Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/riwayat-absensi', [GuruDashboardController::class, 'history'])->name('absensi.history');
@@ -108,9 +110,9 @@ Route::middleware(['auth', 'role:guru,guru_piket,walikelas'])->prefix('guru')->n
     Route::get('/rekap-absensi/export-pdf', [RekapAbsensiController::class, 'exportPdf'])->name('rekap.export.pdf');
 
     // Sub-grup khusus Guru Piket
-    Route::get('/dashboard-data', [GuruPiketController::class, 'getDashboardData'])->name('dashboard.data');
 
-    Route::middleware('role:guru,guru_piket,walikelas')->prefix('piket')->name('piket.')->group(function () {
+    Route::middleware('role:admin,guru,guru_piket,walikelas')->prefix('piket')->name('piket.')->group(function () {
+        // Route::get('/dashboard-data', [GuruPiketController::class, 'getDashboardData'])->name('dashboard.data');
         Route::get('/dashboard-data', [GuruPiketController::class, 'getDashboardData'])->name('dashboard.data');
         Route::post('/hadirkan-manual', [GuruPiketController::class, 'hadirkanManual'])->name('hadirkan.manual');
 
@@ -138,6 +140,15 @@ Route::middleware(['auth', 'siswa'])->prefix('siswa')->name('siswa.')->group(fun
     Route::get('/izin', [IzinController::class, 'index'])->name('izin.index');
     Route::get('/izin/create', [IzinController::class, 'create'])->name('izin.create');
     Route::post('/izin', [IzinController::class, 'store'])->name('izin.store');
+});
+
+// =====================================================================
+// GRUP ROUTE KHUSUS WALI KELAS
+// =====================================================================
+Route::middleware(['auth', 'role:walikelas'])->prefix('walikelas')->name('walikelas.')->group(function () {
+
+    // Ini yang menghasilkan nama route 'walikelas.dashboard'
+    Route::get('/dashboard', [WalikelasController::class, 'dashboard'])->name('dashboard');
 });
 
 

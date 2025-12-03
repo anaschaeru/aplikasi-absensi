@@ -70,15 +70,27 @@ class GuruPiketController extends Controller
 
     /**
      * Merekam absensi dari hasil scan QR Code.
+     * UPDATE: Sekarang mencari berdasarkan NIS, bukan ID.
      */
     public function record(Request $request)
     {
-        $request->validate(['siswa_id' => 'required|integer|exists:siswa,siswa_id']);
+        // Validasi input sebagai string (karena NIS adalah string/angka panjang)
+        $request->validate(['siswa_id' => 'required|string']);
 
-        $siswa = Siswa::with('kelas')->find($request->siswa_id);
+        $nis = $request->siswa_id;
         $today = Carbon::today()->toDateString();
 
-        // Cek apakah siswa sudah absen hari ini
+        // 1. Cari Siswa Berdasarkan NIS
+        $siswa = Siswa::with('kelas')->where('nis', $nis)->first();
+
+        // Jika siswa tidak ditemukan (QR Code salah/tidak terdaftar)
+        if (!$siswa) {
+            return response()->json([
+                'message' => 'Gagal: QR Code tidak valid. Siswa dengan NIS tersebut tidak ditemukan.'
+            ], 404);
+        }
+
+        // 2. Cek apakah siswa sudah absen hari ini
         $alreadyExists = AbsensiHarian::where('siswa_id', $siswa->siswa_id)
             ->whereDate('tanggal_absensi', $today)
             ->exists();
@@ -89,7 +101,7 @@ class GuruPiketController extends Controller
             ], 409); // 409 Conflict
         }
 
-        // Jika belum, rekam absensi
+        // 3. Rekam Absensi (Gunakan ID asli siswa yang ditemukan)
         AbsensiHarian::create([
             'siswa_id' => $siswa->siswa_id,
             'tanggal_absensi' => $today,
@@ -137,6 +149,7 @@ class GuruPiketController extends Controller
 
     /**
      * Merekam absensi secara manual oleh guru piket.
+     * (Ini tetap menggunakan ID karena diklik dari tombol, bukan scan)
      */
     public function hadirkanManual(Request $request)
     {
