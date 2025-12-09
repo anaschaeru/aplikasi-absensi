@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage; // <-- TAMBAHAN: Untuk simpan foto
+use Illuminate\Support\Str; // <-- TAMBAHAN: Helper string
 use Illuminate\Validation\ValidationException;
 
 // Import Model Aplikasi Anda
@@ -69,13 +71,15 @@ class GuruPiketController extends Controller
     }
 
     /**
-     * Merekam absensi dari hasil scan QR Code.
-     * UPDATE: Sekarang mencari berdasarkan NIS, bukan ID.
+     * Merekam absensi dari hasil scan QR Code + Foto Wajah.
      */
     public function record(Request $request)
     {
-        // Validasi input sebagai string (karena NIS adalah string/angka panjang)
-        $request->validate(['siswa_id' => 'required|string']);
+        // Validasi input
+        $request->validate([
+            'siswa_id' => 'required|string', // NIS
+            'image' => 'nullable|string',    // String Base64 Foto
+        ]);
 
         $nis = $request->siswa_id;
         $today = Carbon::today()->toDateString();
@@ -101,12 +105,36 @@ class GuruPiketController extends Controller
             ], 409); // 409 Conflict
         }
 
-        // 3. Rekam Absensi (Gunakan ID asli siswa yang ditemukan)
+        // 3. Proses Simpan Foto (Jika dikirim dari frontend)
+        $fotoPath = null;
+        if ($request->filled('image')) {
+            try {
+                $image = $request->image;
+                // Bersihkan string base64
+                if (strpos($image, 'data:image') === 0) {
+                    $image = explode(',', $image)[1];
+                }
+                $image = str_replace(' ', '+', $image);
+
+                // Nama file unik: absensi/TANGGAL/NIS_TIMESTAMP.jpg
+                $imageName = 'absensi/' . $today . '/' . $siswa->nis . '_' . time() . '.jpg';
+
+                // Simpan ke storage public
+                Storage::disk('public')->put($imageName, base64_decode($image));
+                $fotoPath = $imageName;
+            } catch (\Exception $e) {
+                // Jika gagal simpan foto, lanjut saja rekam absensi tapi tanpa foto
+                // Opsional: Log error here
+            }
+        }
+
+        // 4. Rekam Absensi ke Database
         AbsensiHarian::create([
-            'siswa_id' => $siswa->siswa_id,
+            'siswa_id' => $siswa->siswa_id, // Gunakan ID asli
             'tanggal_absensi' => $today,
             'waktu_masuk' => Carbon::now()->toTimeString(),
-            'status' => 'Hadir'
+            'status' => 'Hadir',
+            'foto_masuk' => $fotoPath // Simpan path foto
         ]);
 
         return response()->json([
@@ -170,7 +198,8 @@ class GuruPiketController extends Controller
             'siswa_id' => $siswa->siswa_id,
             'tanggal_absensi' => $today,
             'waktu_masuk' => Carbon::now()->toTimeString(),
-            'status' => 'Hadir'
+            'status' => 'Hadir',
+            // Manual tidak ada foto
         ]);
 
         return response()->json([
