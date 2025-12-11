@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreign('siswa_id')->references('siswa_id')->on('siswa')->onDelete('cascade');
             $table->date('tanggal_absensi');
             $table->time('waktu_masuk');
-            $table->enum('status', ['hadir', 'izin', 'sakit', 'alpha'])->default('hadir')->comment('status kehadiran');
+            $table->enum('status', ['Hadir', 'Izin', 'Sakit', 'Alfa'])->default('Hadir')->comment('status kehadiran');
             $table->timestamps();
 
             // Pastikan satu siswa hanya bisa absen sekali per hari

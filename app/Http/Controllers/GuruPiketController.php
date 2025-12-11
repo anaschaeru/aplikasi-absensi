@@ -268,13 +268,4 @@ class GuruPiketController extends Controller
 
         return redirect()->route('guru.piket.izin.index')->with('success', 'Izin untuk ' . $namaSiswa . ' telah ditolak.');
     }
-
-    /**
-     * Metode 'scan' yang mungkin sudah tidak terpakai,
-     * dialihkan ke dashboard.
-     */
-    public function scan()
-    {
-        return redirect()->route('guru.piket.dashboard');
-    }
 }
