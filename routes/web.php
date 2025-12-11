@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\SiswaController;
@@ -18,7 +19,6 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\LaporanAbsensiController;
 use App\Http\Controllers\SiswaDashboardController;
 use App\Http\Controllers\JadwalPelajaranController;
-use Illuminate\Support\Facades\Auth; // <-- Pastikan ini di-import
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Route::get('/', function () {
 });
 
 // =====================================================================
-// RUTE PENGALIHAN SETELAH LOGIN (Telah Diperbarui)
+// RUTE PENGALIHAN SETELAH LOGIN
 // =====================================================================
 Route::get('/dashboard', function () {
     $role = Auth::user()->role;
@@ -39,20 +39,16 @@ Route::get('/dashboard', function () {
     switch ($role) {
         case 'admin':
             return redirect()->route('admin.dashboard');
-            break;
         case 'walikelas':
             return redirect()->route('walikelas.dashboard');
         case 'guru':
         case 'guru_piket':
             return redirect()->route('guru.dashboard');
-            break;
         case 'siswa':
             return redirect()->route('siswa.dashboard');
-            break;
         default:
             Auth::logout();
-            return redirect('/login')->with('error', 'Peran tidak dikenali.');
-            break;
+            return redirect()->route('login')->with('error', 'Peran tidak dikenali.');
     }
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -94,7 +90,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 
 // =====================================================================
-// GRUP ROUTE KHUSUS GURU & GURU PIKET
+// GRUP ROUTE KHUSUS GURU, GURU PIKET & WALIKELAS
 // =====================================================================
 Route::middleware(['auth', 'role:admin,guru,guru_piket,walikelas'])->prefix('guru')->name('guru.')->group(function () {
     Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('dashboard');
@@ -110,9 +106,7 @@ Route::middleware(['auth', 'role:admin,guru,guru_piket,walikelas'])->prefix('gur
     Route::get('/rekap-absensi/export-pdf', [RekapAbsensiController::class, 'exportPdf'])->name('rekap.export.pdf');
 
     // Sub-grup khusus Guru Piket
-
     Route::middleware('role:admin,guru,guru_piket,walikelas')->prefix('piket')->name('piket.')->group(function () {
-        // Route::get('/dashboard-data', [GuruPiketController::class, 'getDashboardData'])->name('dashboard.data');
         Route::get('/dashboard-data', [GuruPiketController::class, 'getDashboardData'])->name('dashboard.data');
         Route::post('/hadirkan-manual', [GuruPiketController::class, 'hadirkanManual'])->name('hadirkan.manual');
 
@@ -120,7 +114,6 @@ Route::middleware(['auth', 'role:admin,guru,guru_piket,walikelas'])->prefix('gur
         Route::get('/scan', [GuruPiketController::class, 'scan'])->name('scan');
         Route::post('/scan/record', [GuruPiketController::class, 'record'])->name('record');
 
-        // --- TAMBAHKAN RUTE INI ---
         Route::get('/izin', [GuruPiketController::class, 'indexIzin'])->name('izin.index');
         Route::patch('/izin/{izin}/approve', [GuruPiketController::class, 'approveIzin'])->name('izin.approve');
         Route::patch('/izin/{izin}/reject', [GuruPiketController::class, 'rejectIzin'])->name('izin.reject');
@@ -131,24 +124,26 @@ Route::middleware(['auth', 'role:admin,guru,guru_piket,walikelas'])->prefix('gur
 // =====================================================================
 // GRUP ROUTE KHUSUS SISWA
 // =====================================================================
-Route::middleware(['auth', 'siswa'])->prefix('siswa')->name('siswa.')->group(function () { // <-- Menggunakan 'isSiswa'
+Route::middleware(['auth', 'siswa'])->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
     Route::get('/my-qrcode', [SiswaDashboardController::class, 'showMyQrCode'])->name('my_qrcode');
 
-
-    // --- TAMBAHKAN RUTE INI ---
     Route::get('/izin', [IzinController::class, 'index'])->name('izin.index');
     Route::get('/izin/create', [IzinController::class, 'create'])->name('izin.create');
     Route::post('/izin', [IzinController::class, 'store'])->name('izin.store');
 });
+
 
 // =====================================================================
 // GRUP ROUTE KHUSUS WALI KELAS
 // =====================================================================
 Route::middleware(['auth', 'role:walikelas'])->prefix('walikelas')->name('walikelas.')->group(function () {
 
-    // Ini yang menghasilkan nama route 'walikelas.dashboard'
+    // Dashboard Wali Kelas
     Route::get('/dashboard', [WalikelasController::class, 'dashboard'])->name('dashboard');
+
+    // Rekap Absensi Harian (Detail per Tanggal + Foto)
+    Route::get('/rekap-harian', [WalikelasController::class, 'rekapHarian'])->name('rekap.harian');
 });
 
 

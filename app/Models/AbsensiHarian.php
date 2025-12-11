@@ -14,6 +14,7 @@ class AbsensiHarian extends Model
         'tanggal_absensi',
         'status',
         'waktu_masuk',
+        'foto_masuk',
         // tambahkan field lain jika ada
     ];
 
