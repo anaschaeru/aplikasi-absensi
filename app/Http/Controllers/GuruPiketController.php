@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage; // <-- TAMBAHAN: Untuk simpan foto
-use Illuminate\Support\Str; // <-- TAMBAHAN: Helper string
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 // Import Model Aplikasi Anda
@@ -27,7 +27,6 @@ class GuruPiketController extends Controller
     public function dashboard()
     {
         $today = Carbon::today()->toDateString();
-        $namaHariIni = Carbon::now()->locale('id')->translatedFormat('l');
 
         // 1. Ambil data statistik
         $totalSiswa = Siswa::count();
@@ -38,15 +37,15 @@ class GuruPiketController extends Controller
         // 2. Ambil aktivitas absensi terbaru
         $aktivitasTerbaru = AbsensiHarian::whereDate('tanggal_absensi', $today)
             ->with('siswa.kelas')
-            ->latest('created_at') // Urutkan berdasarkan waktu pembuatan record
-            ->limit(10) // Batasi jumlah aktivitas
+            ->latest('updated_at') // Updated at agar kelihatan aktivitas pulang juga
+            ->limit(10)
             ->get();
 
         // 3. Ambil daftar siswa yang belum hadir
         $siswaBelumHadir = Siswa::whereNotIn('siswa_id', $siswaHadirIds)
             ->with('kelas')
-            ->orderBy('kelas_id') // Urutkan berdasarkan kelas dulu
-            ->orderBy('nama_siswa') // Lalu berdasarkan nama
+            ->orderBy('kelas_id')
+            ->orderBy('nama_siswa')
             ->get();
 
         // 4. Ambil Jadwal Pelajaran Lengkap
@@ -54,92 +53,141 @@ class GuruPiketController extends Controller
             ->get()
             ->sortBy([
                 ['kelas.nama_kelas', 'asc'],
-                ['hari_id', 'asc'], // Pastikan ada kolom hari_id (Senin=1, dst)
+                ['hari_id', 'asc'],
                 ['jam_mulai', 'asc'],
             ])
-            ->groupBy('kelas.nama_kelas'); // Kelompokkan berdasarkan nama kelas
+            ->groupBy('kelas.nama_kelas');
 
-        // 5. Kirim semua data ke view
         return view('guru-piket.dashboard', compact(
             'totalSiswa',
             'jumlahHadir',
             'jumlahBelumHadir',
             'aktivitasTerbaru',
             'siswaBelumHadir',
-            'jadwals' // <-- Kirim data jadwal
+            'jadwals'
         ));
     }
 
     /**
-     * Merekam absensi dari hasil scan QR Code + Foto Wajah.
+     * Merekam absensi: Otomatis deteksi Masuk atau Pulang.
      */
     public function record(Request $request)
     {
         // Validasi input
         $request->validate([
             'siswa_id' => 'required|string', // NIS
-            'image' => 'nullable|string',    // String Base64 Foto
+            'image' => 'nullable|string',    // Foto Base64
         ]);
 
         $nis = $request->siswa_id;
         $today = Carbon::today()->toDateString();
+        $now = Carbon::now();
 
-        // 1. Cari Siswa Berdasarkan NIS
+        // 1. Cari Siswa
         $siswa = Siswa::with('kelas')->where('nis', $nis)->first();
 
-        // Jika siswa tidak ditemukan (QR Code salah/tidak terdaftar)
         if (!$siswa) {
             return response()->json([
-                'message' => 'Gagal: QR Code tidak valid. Siswa dengan NIS tersebut tidak ditemukan.'
+                'message' => 'Gagal: QR Code tidak valid/Siswa tidak ditemukan.'
             ], 404);
         }
 
-        // 2. Cek apakah siswa sudah absen hari ini
-        $alreadyExists = AbsensiHarian::where('siswa_id', $siswa->siswa_id)
+        // 2. Cek apakah sudah ada data absensi hari ini?
+        $absensi = AbsensiHarian::where('siswa_id', $siswa->siswa_id)
             ->whereDate('tanggal_absensi', $today)
-            ->exists();
+            ->first();
 
-        if ($alreadyExists) {
-            return response()->json([
-                'message' => 'Gagal: ' . $siswa->nama_siswa . ' sudah absen hari ini.'
-            ], 409); // 409 Conflict
-        }
+        // --- SKENARIO 1: ABSEN MASUK (Data belum ada) ---
+        if (!$absensi) {
 
-        // 3. Proses Simpan Foto (Jika dikirim dari frontend)
-        $fotoPath = null;
-        if ($request->filled('image')) {
-            try {
-                $image = $request->image;
-                // Bersihkan string base64
-                if (strpos($image, 'data:image') === 0) {
-                    $image = explode(',', $image)[1];
-                }
-                $image = str_replace(' ', '+', $image);
-
-                // Nama file unik: absensi/TANGGAL/NIS_TIMESTAMP.jpg
-                $imageName = 'absensi/' . $today . '/' . $siswa->nis . '_' . time() . '.jpg';
-
-                // Simpan ke storage public
-                Storage::disk('public')->put($imageName, base64_decode($image));
-                $fotoPath = $imageName;
-            } catch (\Exception $e) {
-                // Jika gagal simpan foto, lanjut saja rekam absensi tapi tanpa foto
-                // Opsional: Log error here
+            // Proses Simpan Foto Masuk
+            $fotoPath = null;
+            if ($request->filled('image')) {
+                $fotoPath = $this->simpanFoto($request->image, $siswa->nis, 'masuk');
             }
+
+            AbsensiHarian::create([
+                'siswa_id' => $siswa->siswa_id,
+                'tanggal_absensi' => $today,
+                'waktu_masuk' => $now->toTimeString(),
+                'status' => 'Hadir',
+                'foto_masuk' => $fotoPath
+            ]);
+
+            return response()->json([
+                'message' => 'Selamat Datang, ' . $siswa->nama_siswa . '! (Masuk)'
+            ]);
         }
 
-        // 4. Rekam Absensi ke Database
-        AbsensiHarian::create([
-            'siswa_id' => $siswa->siswa_id, // Gunakan ID asli
-            'tanggal_absensi' => $today,
-            'waktu_masuk' => Carbon::now()->toTimeString(),
-            'status' => 'Hadir',
-            'foto_masuk' => $fotoPath // Simpan path foto
-        ]);
+        // --- SKENARIO 2: ABSEN PULANG ---
+        elseif ($absensi->waktu_pulang == null) {
 
-        return response()->json([
-            'message' => 'Berhasil: ' . $siswa->nama_siswa . ' (' . ($siswa->kelas->nama_kelas ?? 'N/A') . ')'
-        ]);
+            // 1. Gabungkan Tanggal dan Jam Masuk
+            $waktuMasukString = $absensi->tanggal_absensi . ' ' . $absensi->waktu_masuk;
+
+            // 2. Parse waktu masuk
+            $waktuMasuk = Carbon::parse($waktuMasukString);
+
+            // 3. Hitung selisih dalam DETIK (Gunakan abs() agar selalu positif)
+            // abs() mengubah -1933 menjadi 1933
+            $selisihDetik = abs($now->diffInSeconds($waktuMasuk));
+
+            // Jika selisih kurang dari 60 detik (1 menit), tolak.
+            // Sekarang logika: 1933 < 60 adalah FALSE -> Lanjut Absen Pulang (Benar)
+            if ($selisihDetik < 60) {
+                $sisaDetik = 60 - intval($selisihDetik);
+                return response()->json([
+                    'message' => "Baru saja absen masuk. Tunggu {$sisaDetik} detik lagi untuk pulang."
+                ], 422);
+            }
+
+            // --- PROSES SIMPAN FOTO & UPDATE DATA ---
+            $fotoPath = null;
+            if ($request->filled('image')) {
+                $fotoPath = $this->simpanFoto($request->image, $siswa->nis, 'pulang');
+            }
+
+            AbsensiHarian::where('siswa_id', $siswa->siswa_id)
+                ->whereDate('tanggal_absensi', $today)
+                ->update([
+                    'waktu_pulang' => $now->toTimeString(),
+                    'foto_pulang' => $fotoPath,
+                    'updated_at' => $now
+                ]);
+
+            return response()->json([
+                'message' => 'Hati-hati di jalan, ' . $siswa->nama_siswa . '! (Pulang)'
+            ]);
+        }
+
+        // --- SKENARIO 3: SUDAH SELESAI (Masuk & Pulang sudah ada) ---
+        else {
+            return response()->json([
+                'message' => 'Halo ' . $siswa->nama_siswa . ', Anda sudah melengkapi absen hari ini.'
+            ], 409);
+        }
+    }
+
+    /**
+     * Helper untuk menyimpan foto Base64
+     */
+    private function simpanFoto($imageBase64, $nis, $tipe)
+    {
+        try {
+            if (strpos($imageBase64, 'data:image') === 0) {
+                $imageBase64 = explode(',', $imageBase64)[1];
+            }
+            $imageBase64 = str_replace(' ', '+', $imageBase64);
+            $today = Carbon::today()->toDateString();
+
+            // Nama file: absensi/2023-10-27/NIS_masuk_timestamp.jpg
+            $imageName = 'absensi/' . $today . '/' . $nis . '_' . $tipe . '_' . time() . '.jpg';
+
+            Storage::disk('public')->put($imageName, base64_decode($imageBase64));
+            return $imageName;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**
@@ -157,7 +205,7 @@ class GuruPiketController extends Controller
 
         $aktivitasTerbaru = AbsensiHarian::whereDate('tanggal_absensi', $today)
             ->with('siswa.kelas')
-            ->latest('created_at')
+            ->latest('updated_at') // Ubah ke updated_at agar absen pulang muncul paling atas
             ->limit(10)
             ->get();
 
@@ -177,7 +225,7 @@ class GuruPiketController extends Controller
 
     /**
      * Merekam absensi secara manual oleh guru piket.
-     * (Ini tetap menggunakan ID karena diklik dari tombol, bukan scan)
+     * (Hanya untuk Absen Masuk)
      */
     public function hadirkanManual(Request $request)
     {
@@ -198,8 +246,7 @@ class GuruPiketController extends Controller
             'siswa_id' => $siswa->siswa_id,
             'tanggal_absensi' => $today,
             'waktu_masuk' => Carbon::now()->toTimeString(),
-            'status' => 'Hadir',
-            // Manual tidak ada foto
+            'status' => 'Hadir'
         ]);
 
         return response()->json([
@@ -267,5 +314,10 @@ class GuruPiketController extends Controller
         $namaSiswa = $izin->siswa ? $izin->siswa->nama_siswa : 'Siswa (ID: ' . $izin->siswa_id . ')';
 
         return redirect()->route('guru.piket.izin.index')->with('success', 'Izin untuk ' . $namaSiswa . ' telah ditolak.');
+    }
+
+    public function scan()
+    {
+        return redirect()->route('guru.piket.dashboard');
     }
 }

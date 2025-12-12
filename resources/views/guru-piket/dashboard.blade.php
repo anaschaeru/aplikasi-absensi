@@ -279,7 +279,7 @@
           .then(response => {
             showStatusMessage(response.data.message, 'success');
             let swalOptions = {
-              title: 'Absensi Berhasil!',
+              title: 'Berhasil!',
               text: response.data.message,
               icon: 'success',
               timer: 2000,

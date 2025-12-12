@@ -144,6 +144,8 @@ Route::middleware(['auth', 'role:walikelas'])->prefix('walikelas')->name('walike
 
     // Rekap Absensi Harian (Detail per Tanggal + Foto)
     Route::get('/rekap-harian', [WalikelasController::class, 'rekapHarian'])->name('rekap.harian');
+    // Route untuk update status harian manual
+    Route::post('/rekap-harian/update', [WalikelasController::class, 'updateStatus'])->name('rekap.harian.update');
 });
 
 

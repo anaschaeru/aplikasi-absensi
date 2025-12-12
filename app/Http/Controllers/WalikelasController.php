@@ -114,4 +114,38 @@ class WalikelasController extends Controller
             'stats'
         ));
     }
+
+    /**
+     * Update Status Absensi Harian Manual oleh Wali Kelas
+     */
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'siswa_id' => 'required|exists:siswa,siswa_id',
+            'tanggal'  => 'required|date',
+            'status'   => 'required|in:Hadir,Sakit,Izin,Alfa',
+        ]);
+
+        // Simpan atau Update Data
+        AbsensiHarian::updateOrCreate(
+            [
+                'siswa_id'        => $request->siswa_id,
+                'tanggal_absensi' => $request->tanggal,
+            ],
+            [
+                'status'       => $request->status,
+
+                // PERBAIKAN DI SINI:
+                // Selalu isi waktu_masuk dengan jam sekarang agar tidak error SQL Integrity.
+                // Ini akan dianggap sebagai "Jam Input Data oleh Wali Kelas"
+                'waktu_masuk'  => Carbon::now()->toTimeString(),
+
+                'waktu_pulang' => null,
+                'foto_masuk'   => null,
+                'foto_pulang'  => null,
+            ]
+        );
+
+        return redirect()->back()->with('success', 'Status absensi berhasil diperbarui.');
+    }
 }
