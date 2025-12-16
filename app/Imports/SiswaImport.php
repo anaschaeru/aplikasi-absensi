@@ -6,70 +6,67 @@ use App\Models\Siswa;
 use App\Models\User;
 use App\Models\Kelas;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB; // Tambahkan ini untuk Transaction
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithChunkReading; // Wajib ada
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
 class SiswaImport implements ToCollection, WithHeadingRow, WithChunkReading
 {
-    /**
-     * Menentukan berapa baris yang diproses dalam satu waktu.
-     * Angka 100 aman untuk Shared Hosting agar tidak 'MySQL Gone Away'.
-     */
+    // TURUNKAN JADI 10.
+    // Hash password itu berat. Hosting murah tidak kuat hash banyak sekaligus.
     public function chunkSize(): int
     {
-        return 20;
+        return 10;
     }
 
     public function collection(Collection $rows)
     {
-        DB::reconnect();
-        // Gunakan Transaction agar jika error di tengah jalan, data tidak masuk setengah-setengah
+        // TRIK RAHASIA: Putus koneksi lama, buat koneksi baru yang segar.
+        DB::connection()->disableQueryLog(); // Hemat memori
+
+        // Cek koneksi, jika putus, sambung lagi
+        try {
+            DB::reconnect();
+        } catch (\Exception $e) {
+            // Abaikan jika gagal reconnect pertama kali
+        }
+
         DB::transaction(function () use ($rows) {
 
-            // 1. Load data Kelas (Mapping Nama Kelas => ID)
-            // Kita load di sini agar query kelas tetap ringan (hanya dijalankan per chunk)
+            // Ambil cache kelas (Optimasi: hanya ambil nama & id)
             $kelasCache = Kelas::pluck('kelas_id', 'nama_kelas')->mapWithKeys(function ($item, $key) {
-                return [trim(strtoupper($key)) => $item]; // Normalisasi nama kelas jadi uppercase/trim
+                return [trim(strtoupper($key)) => $item];
             });
 
             $usersData = [];
             $siswasData = [];
-            $emails = []; // Untuk melacak email dalam batch ini
+            $emails = [];
+            $passwordHash = Hash::make('password'); // OPTIMASI: Hash sekali saja untuk semua siswa (biar cepat)
+            $now = now();
 
             foreach ($rows as $row) {
-                // Validasi sederhana: nama dan email wajib ada
                 if (empty($row['nama_siswa']) || empty($row['email'])) continue;
 
                 $namaKelas = trim(strtoupper($row['nama_kelas']));
                 $kelasId = $kelasCache[$namaKelas] ?? null;
 
-                // Jika kelas tidak ditemukan, lewati (atau bisa set default)
-                if (!$kelasId) {
-                    continue;
-                }
+                if (!$kelasId) continue;
 
                 $email = trim($row['email']);
-                $password = Hash::make('password'); // Default password
-                $now = now();
 
-                // Persiapkan data User
                 $usersData[] = [
                     'name'       => $row['nama_siswa'],
                     'email'      => $email,
-                    'password'   => $password,
+                    'password'   => $passwordHash, // Pakai hash yang sudah dibuat di atas
                     'role'       => 'siswa',
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
 
-                // Simpan email untuk query pengambilan ID nanti
                 $emails[] = $email;
 
-                // Persiapkan data Siswa (User ID diisi nanti)
-                // Kita gunakan email sebagai key array sementara untuk mapping
                 $siswasData[$email] = [
                     'kelas_id'   => $kelasId,
                     'nis'        => $row['nis'],
@@ -80,19 +77,15 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithChunkReading
                 ];
             }
 
-            // 2. Eksekusi Simpan User
+            // Simpan User
             if (!empty($usersData)) {
-                // InsertOrIgnore berguna jika ada email duplikat, agar tidak error total
-                // Tapi jika ingin update data lama, gunakan upsert (lebih kompleks)
-                // Di sini kita pakai insert biasa, asumsikan data bersih
-                User::insert($usersData);
+                // Insert Ignore (agar jika email duplikat tidak error stop)
+                User::insertOrIgnore($usersData);
 
-                // 3. Ambil ID User yang baru saja dibuat
-                // Kita ambil berdasarkan email yang ada di batch ini
+                // Ambil ID User
                 $users = User::whereIn('email', $emails)->pluck('id', 'email');
 
                 $finalSiswasData = [];
-
                 foreach ($siswasData as $email => $dataSiswa) {
                     if (isset($users[$email])) {
                         $dataSiswa['user_id'] = $users[$email];
@@ -100,9 +93,9 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithChunkReading
                     }
                 }
 
-                // 4. Eksekusi Simpan Siswa
+                // Simpan Siswa
                 if (!empty($finalSiswasData)) {
-                    Siswa::insert($finalSiswasData);
+                    Siswa::insertOrIgnore($finalSiswasData);
                 }
             }
         });

@@ -54,10 +54,12 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => [
-                PDO::ATTR_EMULATE_PREPARES => true,
-                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
-            ],
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_EMULATE_PREPARES => true, // Ubah jadi TRUE untuk hosting
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, // Tambah ini
+                PDO::ATTR_TIMEOUT => 300, // Tambah timeout (detik)
+            ]) : [],
 
             'dump' => [
                 'dump_binary_path' => '/usr/bin/', // sesuaikan path mysql dump
