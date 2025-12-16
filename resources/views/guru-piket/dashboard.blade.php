@@ -279,7 +279,12 @@
 
           showStatusMessage('Wajah tidak terdeteksi!', 'error');
           Swal.fire({
-            // ... opsi swal ...
+            title: 'Akses Ditolak!',
+            html: 'Wajah siswa tidak terdeteksi.<br><b>Harap menghadap ke kamera.</b>',
+            icon: 'warning',
+            timer: 1000,
+            showConfirmButton: false
+
           }).then(() => {
             // Kembalikan fokus setelah swal ditutup
             if (input) {
