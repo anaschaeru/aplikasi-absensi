@@ -21,11 +21,12 @@ class JadwalPelajaranImport implements ToCollection, WithHeadingRow, WithChunkRe
      */
     public function chunkSize(): int
     {
-        return 100;
+        return 20;
     }
 
     public function collection(Collection $rows)
     {
+        DB::reconnect();
         DB::transaction(function () use ($rows) {
 
             // 1. Buat Cache Mapping (Nama => ID)

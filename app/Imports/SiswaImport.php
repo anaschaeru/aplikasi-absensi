@@ -20,11 +20,12 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithChunkReading
      */
     public function chunkSize(): int
     {
-        return 100;
+        return 20;
     }
 
     public function collection(Collection $rows)
     {
+        DB::reconnect();
         // Gunakan Transaction agar jika error di tengah jalan, data tidak masuk setengah-setengah
         DB::transaction(function () use ($rows) {
 

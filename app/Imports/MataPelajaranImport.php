@@ -16,11 +16,12 @@ class MataPelajaranImport implements ToCollection, WithHeadingRow, WithChunkRead
      */
     public function chunkSize(): int
     {
-        return 100;
+        return 20;
     }
 
     public function collection(Collection $rows)
     {
+        DB::reconnect();
         DB::transaction(function () use ($rows) {
             $mapelList = [];
             $kodesInBatch = [];

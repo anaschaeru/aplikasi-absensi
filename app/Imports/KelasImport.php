@@ -16,11 +16,12 @@ class KelasImport implements ToCollection, WithHeadingRow, WithChunkReading
      */
     public function chunkSize(): int
     {
-        return 100;
+        return 20;
     }
 
     public function collection(Collection $rows)
     {
+        DB::reconnect();
         // Gunakan transaksi db agar aman
         DB::transaction(function () use ($rows) {
             $kelasList = [];
