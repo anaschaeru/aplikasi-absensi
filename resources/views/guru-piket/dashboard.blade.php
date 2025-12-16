@@ -201,22 +201,42 @@
       let scannerDebounceTimer;
       let isFaceModelLoaded = false;
 
-      // --- 1. LOAD MODEL WAJAH ---
+      // --- 1. LOAD MODEL WAJAH (PERBAIKAN) ---
       async function loadFaceModels() {
         try {
-          // PERBAIKAN: Gunakan asset() agar path sesuai dengan domain/hosting
+          // Tampilkan loading di status
+          showStatusMessage("Sedang mengunduh model AI...", "warning");
+
+          // Disable input scanner agar user tidak scan duluan
+          const inputScanner = document.getElementById('scanner_input');
+          if (inputScanner) inputScanner.disabled = true;
+
+          // Gunakan asset() Laravel agar path dinamis.
+          // Pastikan folder 'models' ada di folder 'public' hosting Anda.
           const modelUrl = "{{ asset('models') }}";
 
-          // Debugging: Cek URL di console browser
-          console.log("Memuat model dari:", modelUrl);
+          console.log("Memulai load model dari: " + modelUrl); // Cek Console browser
 
+          // Load Model
           await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
 
+          // Jika berhasil
           isFaceModelLoaded = true;
-          console.log("Model Wajah Berhasil Dimuat");
+          console.log("Model Wajah SIAP!");
+          showStatusMessage("Sistem Siap. Silahkan Scan.", "success");
+
+          // Enable input scanner kembali
+          if (inputScanner) {
+            inputScanner.disabled = false;
+            inputScanner.focus();
+          }
+
         } catch (error) {
-          console.error("Gagal memuat model wajah:", error);
-          showStatusMessage("Gagal memuat sistem deteksi wajah. Cek console (F12).", "error");
+          console.error("GAGAL MEMUAT MODEL:", error);
+          showStatusMessage("Gagal memuat AI Wajah. Cek Koneksi/Console.", "error");
+
+          // Cek detail error
+          alert("Error loading model: " + JSON.stringify(error));
         }
       }
 
@@ -253,19 +273,20 @@
         const hasFace = await checkFaceExist();
 
         if (!hasFace) {
+          // TAMBAHAN: Lepas fokus dari input scanner agar tidak bentrok dengan aria-hidden Swal
+          const input = document.getElementById('scanner_input');
+          if (input) input.blur();
+
           showStatusMessage('Wajah tidak terdeteksi!', 'error');
           Swal.fire({
-            title: 'Akses Ditolak!',
-            html: 'Wajah siswa tidak terdeteksi.<br><b>Harap menghadap ke kamera.</b>',
-            icon: 'warning',
-            timer: 2000,
-            showConfirmButton: false
+            // ... opsi swal ...
+          }).then(() => {
+            // Kembalikan fokus setelah swal ditutup
+            if (input) {
+              input.value = '';
+              setTimeout(() => input.focus(), 500); // Beri jeda sedikit
+            }
           });
-          const input = document.getElementById('scanner_input');
-          if (input) {
-            input.value = '';
-            input.focus();
-          }
           return;
         }
 
