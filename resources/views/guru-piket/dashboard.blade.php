@@ -204,12 +204,19 @@
       // --- 1. LOAD MODEL WAJAH ---
       async function loadFaceModels() {
         try {
-          await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+          // PERBAIKAN: Gunakan asset() agar path sesuai dengan domain/hosting
+          const modelUrl = "{{ asset('models') }}";
+
+          // Debugging: Cek URL di console browser
+          console.log("Memuat model dari:", modelUrl);
+
+          await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
+
           isFaceModelLoaded = true;
           console.log("Model Wajah Berhasil Dimuat");
         } catch (error) {
           console.error("Gagal memuat model wajah:", error);
-          showStatusMessage("Gagal memuat sistem deteksi wajah. Cek console.", "error");
+          showStatusMessage("Gagal memuat sistem deteksi wajah. Cek console (F12).", "error");
         }
       }
 
