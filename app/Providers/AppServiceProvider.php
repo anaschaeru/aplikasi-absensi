@@ -21,6 +21,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Paksa semua link asset() menjadi HTTPS
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
         //
         // // Cek jika aplikasi berjalan di lingkungan produksi atau diakses via Ngrok
         // if (str_contains(config('app.url'), 'ngrok-free.dev') || $this->app->environment('production')) {
