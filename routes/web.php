@@ -158,5 +158,31 @@ Route::get('/pasang-symlink', function () {
     }
 });
 
+Route::get('/link-manual', function () {
+    // 1. Tentukan target (folder asli)
+    $target = storage_path('app/public');
+
+    // 2. Tentukan shortcut (di folder public_html)
+    $shortcut = public_path('storage');
+
+    // Cek apakah folder storage/app/public ada?
+    if (!file_exists($target)) {
+        return "ERROR: Folder target tidak ditemukan di: " . $target;
+    }
+
+    // Cek apakah link sudah ada?
+    if (file_exists($shortcut)) {
+        return "Symlink 'storage' sudah ada di folder public. Hapus dulu jika ingin buat ulang.";
+    }
+
+    // 3. Eksekusi pembuatan link
+    try {
+        symlink($target, $shortcut);
+        return "SUKSES! Symlink berhasil dibuat. <br>Target: $target <br>Link: $shortcut";
+    } catch (\Exception $e) {
+        return "GAGAL: " . $e->getMessage();
+    }
+});
+
 // Rute Autentikasi dari Breeze
 require __DIR__ . '/auth.php';
