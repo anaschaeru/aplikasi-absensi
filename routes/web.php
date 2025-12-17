@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\SiswaController;
@@ -148,6 +149,14 @@ Route::middleware(['auth', 'role:walikelas'])->prefix('walikelas')->name('walike
     Route::post('/rekap-harian/update', [WalikelasController::class, 'updateStatus'])->name('rekap.harian.update');
 });
 
+Route::get('/pasang-symlink', function () {
+    try {
+        Artisan::call('storage:link');
+        return 'Symlink berhasil dibuat! Cek folder public/storage sekarang.';
+    } catch (\Exception $e) {
+        return 'Gagal: ' . $e->getMessage();
+    }
+});
 
 // Rute Autentikasi dari Breeze
 require __DIR__ . '/auth.php';
