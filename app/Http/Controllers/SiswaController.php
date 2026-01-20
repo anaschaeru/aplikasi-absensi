@@ -8,6 +8,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+// TAMBAHAN BARU: Import library Excel & Class Import
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\SiswaImport;
 
 class SiswaController extends Controller
 {
@@ -16,7 +19,6 @@ class SiswaController extends Controller
      */
     public function index(Request $request)
     {
-
         $siswas = Siswa::with(['kelas', 'user'])
             ->orderBy('nama_siswa', 'asc')
             ->get();
@@ -68,6 +70,33 @@ class SiswaController extends Controller
     }
 
     /**
+     * FUNGSI BARU: IMPORT EXCEL
+     * Dilengkapi dengan booster memori dan waktu eksekusi.
+     */
+    public function import(Request $request)
+    {
+        // 1. Validasi File
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        // 2. BOOSTER SERVER (PENTING UNTUK SHARED HOSTING)
+        // Ini mencegah error "504 Gateway Timeout" atau "MySQL Gone Away"
+        ini_set('max_execution_time', 600); // 10 Menit
+        ini_set('memory_limit', '512M');    // 512 MegaBytes
+
+        // 3. Eksekusi Import
+        try {
+            Excel::import(new SiswaImport, $request->file('file'));
+
+            return back()->with('success', 'Data siswa berhasil diimpor!');
+        } catch (\Exception $e) {
+            // Tampilkan pesan error yang jelas jika gagal
+            return back()->with('error', 'Gagal Impor: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Menampilkan form untuk mengedit siswa. (UPDATE)
      */
     public function edit(Siswa $siswa)
@@ -89,14 +118,13 @@ class SiswaController extends Controller
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('siswa')->ignore($siswa->siswa_id, 'siswa_id')
+                'unique:siswa,nis,' . $siswa->siswa_id . ',siswa_id' // Syntax update unique Laravel yg lebih simpel
             ],
             'email' => [
                 'required',
                 'string',
                 'email',
                 'max:255',
-                // Pastikan email unik, kecuali untuk user siswa itu sendiri
                 Rule::unique('users')->ignore($siswa->user_id)
             ],
             'kelas_id' => 'required|exists:kelas,kelas_id',

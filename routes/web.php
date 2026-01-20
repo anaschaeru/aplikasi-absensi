@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\SiswaController;
@@ -74,6 +73,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('jadwal', JadwalPelajaranController::class);
     Route::resource('mapel', MataPelajaranController::class);
 
+    // [BARU] Route untuk Import Siswa (Wajib ada agar controller baru jalan)
+    Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import');
+
     // Rute untuk menangani permintaan pencarian AJAX
     Route::get('/siswa/search', [SiswaController::class, 'search'])->name('siswa.search');
 
@@ -81,6 +83,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/laporan/absensi/export-excel', [LaporanAbsensiController::class, 'exportExcel'])->name('laporan.absensi.export.excel');
     Route::get('/laporan/absensi/export-pdf', [LaporanAbsensiController::class, 'exportPdf'])->name('laporan.absensi.export.pdf');
 
+    // Import Umum (Jika ada modul import lain)
     Route::get('/import', [ImportController::class, 'index'])->name('import.index');
     Route::post('/import', [ImportController::class, 'store'])->name('import.store');
 
@@ -147,41 +150,6 @@ Route::middleware(['auth', 'role:walikelas'])->prefix('walikelas')->name('walike
     Route::get('/rekap-harian', [WalikelasController::class, 'rekapHarian'])->name('rekap.harian');
     // Route untuk update status harian manual
     Route::post('/rekap-harian/update', [WalikelasController::class, 'updateStatus'])->name('rekap.harian.update');
-});
-
-Route::get('/pasang-symlink', function () {
-    try {
-        Artisan::call('storage:link');
-        return 'Symlink berhasil dibuat! Cek folder public/storage sekarang.';
-    } catch (\Exception $e) {
-        return 'Gagal: ' . $e->getMessage();
-    }
-});
-
-Route::get('/link-manual', function () {
-    // 1. Tentukan target (folder asli)
-    $target = storage_path('app/public');
-
-    // 2. Tentukan shortcut (di folder public_html)
-    $shortcut = public_path('storage');
-
-    // Cek apakah folder storage/app/public ada?
-    if (!file_exists($target)) {
-        return "ERROR: Folder target tidak ditemukan di: " . $target;
-    }
-
-    // Cek apakah link sudah ada?
-    if (file_exists($shortcut)) {
-        return "Symlink 'storage' sudah ada di folder public. Hapus dulu jika ingin buat ulang.";
-    }
-
-    // 3. Eksekusi pembuatan link
-    try {
-        symlink($target, $shortcut);
-        return "SUKSES! Symlink berhasil dibuat. <br>Target: $target <br>Link: $shortcut";
-    } catch (\Exception $e) {
-        return "GAGAL: " . $e->getMessage();
-    }
 });
 
 // Rute Autentikasi dari Breeze
