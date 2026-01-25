@@ -16,10 +16,10 @@
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <h3 class="text-xl font-bold text-gray-800">Daftar Siswa</h3>
 
-            <div class="flex flex-col sm:flex-row gap-2">
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               {{-- Tombol Import Excel --}}
               <button onclick="document.getElementById('importModal').showModal()"
-                class="inline-flex justify-center items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150 w-full sm:w-auto">
+                class="inline-flex justify-center items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 w-full sm:w-auto transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -30,7 +30,7 @@
 
               {{-- Tombol Tambah Siswa --}}
               <a href="{{ route('admin.siswa.create') }}"
-                class="inline-flex justify-center items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 w-full sm:w-auto">
+                class="inline-flex justify-center items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 w-full sm:w-auto transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -48,7 +48,7 @@
                 <th>NIS</th>
                 <th>Nama Siswa</th>
                 <th>Kelas</th>
-                <th>Email</th>
+                <th>Email (Login)</th>
                 <th class="no-export">Aksi</th>
               </tr>
             </thead>
@@ -56,12 +56,24 @@
               @foreach ($siswas as $siswa)
                 <tr>
                   <td>{{ $loop->iteration }}</td>
-                  <td>{{ $siswa->nis }}</td>
-                  <td>{{ $siswa->nama_siswa }}</td>
-                  <td>{{ $siswa->kelas->nama_kelas ?? 'N/A' }}</td>
-                  <td>{{ $siswa->user->email ?? 'N/A' }}</td>
                   <td>
-                    <div class="flex justify-end items-center gap-4">
+                    <span class="px-2 py-1 bg-gray-100 rounded text-xs font-mono font-bold text-gray-600">
+                      {{ $siswa->nis }}
+                    </span>
+                  </td>
+                  <td class="font-medium">{{ $siswa->nama_siswa }}</td>
+                  <td>
+                    @if ($siswa->kelas)
+                      <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                        {{ $siswa->kelas->nama_kelas }}
+                      </span>
+                    @else
+                      <span class="text-gray-400 italic text-xs">Tanpa Kelas</span>
+                    @endif
+                  </td>
+                  <td class="text-sm text-gray-600">{{ $siswa->user->email ?? 'N/A' }}</td>
+                  <td>
+                    <div class="flex justify-end items-center gap-2">
                       <a href="{{ route('admin.siswa.edit', $siswa->siswa_id) }}"
                         class="text-blue-600 hover:text-blue-800 transition p-1 rounded-md hover:bg-blue-100"
                         title="Edit">
@@ -98,25 +110,32 @@
   {{-- MODAL IMPORT EXCEL --}}
   <dialog id="importModal" class="p-0 rounded-lg shadow-xl w-11/12 md:w-1/3 backdrop:bg-gray-900/50">
     <div class="bg-white">
-      <div class="px-6 py-4 border-b">
+      <div class="px-6 py-4 border-b flex justify-between items-center">
         <h3 class="text-lg font-semibold text-gray-900">Import Data Siswa</h3>
+        <form method="dialog">
+          <button class="text-gray-400 hover:text-gray-600 focus:outline-none">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </form>
       </div>
 
       <form action="{{ route('admin.siswa.import') }}" method="POST" enctype="multipart/form-data" class="p-6">
         @csrf
 
-        {{-- Tombol Download Template --}}
-        <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-blue-700">Gunakan template ini agar format sesuai.</p>
-              <p class="text-xs text-blue-500 mt-1">*Pastikan nama file Excel tidak berubah.</p>
-            </div>
-            <a href="{{ secure_asset('templates/template_data_awal.xlsx') }}" download
-              class="text-sm bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition">
-              Unduh Template
-            </a>
-          </div>
+        {{-- Instruksi Template --}}
+        <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 text-sm text-yellow-800">
+          <p class="font-bold mb-2">Format Header Excel (Baris 1):</p>
+          <code class="bg-yellow-100 px-2 py-1 rounded font-mono font-bold text-xs block mb-2 overflow-x-auto">nis |
+            nama_siswa | nama_kelas | alamat</code>
+
+          <ul class="list-disc list-inside mt-3 text-xs space-y-1">
+            <li><strong>Nama Kelas:</strong> Harus SAMA PERSIS dengan data di aplikasi (Contoh: "X RPL 1").</li>
+            <li>Sistem otomatis membuat akun login Siswa.</li>
+            <li><strong>Email Login:</strong> [NIS]@siswa.id</li>
+            <li><strong>Password Default:</strong> password123</li>
+          </ul>
         </div>
 
         {{-- Input File --}}
@@ -124,26 +143,21 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel (.xlsx)</label>
           <input type="file" name="file" accept=".xlsx, .xls" required
             class="block w-full text-sm text-gray-500
-                        file:mr-4 file:py-2 file:px-4
-                        file:rounded-full file:border-0
-                        file:text-sm file:font-semibold
-                        file:bg-blue-50 file:text-blue-700
-                        hover:file:bg-blue-100 border border-gray-300 rounded-lg cursor-pointer focus:outline-none">
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100 border border-gray-300 rounded-lg cursor-pointer focus:outline-none">
         </div>
 
         {{-- Action Buttons --}}
         <div class="flex justify-end gap-3 mt-6">
           <button type="button" onclick="document.getElementById('importModal').close()"
-            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition font-medium text-sm">
             Batal
           </button>
           <button type="submit"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center font-medium text-sm shadow-sm">
             Upload & Import
           </button>
         </div>
@@ -153,7 +167,7 @@
 @endsection
 
 @push('scripts')
-  {{-- Notifikasi & Konfirmasi Hapus --}}
+  {{-- Notifikasi --}}
   @if (session('success'))
     <script>
       Swal.fire({
@@ -172,21 +186,22 @@
     <script>
       Swal.fire({
         icon: 'error',
-        title: 'Gagal!',
+        title: 'Gagal Import',
         text: @json(session('error')),
       });
     </script>
   @endif
 
+  {{-- Script Konfirmasi Hapus --}}
   <script>
     function confirmDelete(id) {
       Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: "Data yang dihapus tidak dapat dikembalikan!",
+        title: 'Hapus Siswa?',
+        text: "Data siswa dan akun login mereka akan dihapus permanen.",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#4f46e5',
-        cancelButtonColor: '#d33',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
         confirmButtonText: 'Ya, hapus!',
         cancelButtonText: 'Batal'
       }).then((result) => {
@@ -207,27 +222,21 @@
           "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
           "infoEmpty": "Menampilkan 0 sampai 0 dari 0 entri",
           "infoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
-          "infoThousands": "'",
           "lengthMenu": "Tampilkan _MENU_ entri",
           "loadingRecords": "Sedang memuat...",
           "processing": "Sedang memproses...",
           "search": "Cari:",
           "zeroRecords": "Tidak ditemukan data yang sesuai",
-          "thousands": "'",
           "paginate": {
             "first": "Pertama",
             "last": "Terakhir",
             "next": "Selanjutnya",
             "previous": "Sebelumnya"
-          },
-          "aria": {
-            "sortAscending": ": aktifkan untuk mengurutkan kolom ke atas",
-            "sortDescending": ": aktifkan untuk mengurutkan kolom ke bawah"
           }
         },
         lengthMenu: [
-          [10, 25, 50, 100, 250, 500, 1000, -1],
-          [10, 25, 50, 100, 250, 500, 1000, "Semua"]
+          [10, 25, 50, 100, -1],
+          [10, 25, 50, 100, "Semua"]
         ],
         dom: '<"flex flex-col sm:flex-row sm:justify-between gap-4 mb-4"lf>rt<"flex flex-col sm:flex-row sm:justify-between gap-4 mt-4"ip>'
       });

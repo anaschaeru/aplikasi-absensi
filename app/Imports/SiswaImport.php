@@ -26,7 +26,7 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithChunkReading
         // --- OPTIMASI 1: HASH PASSWORD DI LUAR LOOP ---
         // Server hanya mikir 1 kali untuk enkripsi password.
         // Jika ditaruh di dalam loop, server mikir 1000 kali (Penyebab Lemot).
-        $passwordDefault = Hash::make('password123');
+        $passwordDefault = Hash::make('Akusmkn4');
 
         // --- OPTIMASI 2: AMBIL CACHE KELAS ---
         // Ambil semua ID kelas ke memori, agar tidak query DB berulang-ulang
@@ -41,7 +41,9 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithChunkReading
 
             foreach ($rows as $row) {
                 // Validasi data kosong
-                if (empty($row['nama_siswa']) || empty($row['email'])) continue;
+                if (empty($row['nis']) || empty($row['nama_siswa'])) continue;
+                $nis = trim($row['nis']);
+                $nama_siswa = trim($row['nama_siswa']);
 
                 // Cari ID Kelas dari Cache (Cepat)
                 $namaKelasExcel = trim(strtoupper($row['nama_kelas']));
@@ -52,9 +54,9 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithChunkReading
 
                 // 1. Buat/Cari User (Pakai password yang sudah di-hash di atas)
                 $user = User::firstOrCreate(
-                    ['email' => $row['email']],
+                    ['email' => $nis . '@siswa.id'], // Dummy email pakai NIS
                     [
-                        'name' => $row['nama_siswa'],
+                        'name' => $nama_siswa,
                         'password' => $passwordDefault, // <--- PAKAI INI (CEPAT!)
                         'role' => 'siswa',
                     ]
@@ -66,7 +68,7 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithChunkReading
                     [
                         'user_id' => $user->id,
                         'kelas_id' => $kelasId,
-                        'nama_siswa' => $row['nama_siswa'],
+                        'nama_siswa' => $nama_siswa,
                         'alamat' => $row['alamat'] ?? '-',
                     ]
                 );

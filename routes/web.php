@@ -76,6 +76,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // [BARU] Route untuk Import Siswa (Wajib ada agar controller baru jalan)
     Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import');
     Route::post('/kelas/import', [KelasController::class, 'import'])->name('kelas.import');
+    Route::post('/mapel/import', [MataPelajaranController::class, 'import'])->name('mapel.import');
+    Route::post('/guru/import', [GuruController::class, 'import'])->name('guru.import');
+    Route::post('/jadwal/import', [JadwalPelajaranController::class, 'import'])->name('jadwal.import');
 
 
     // Rute untuk menangani permintaan pencarian AJAX

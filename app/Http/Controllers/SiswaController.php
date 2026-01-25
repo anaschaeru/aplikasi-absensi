@@ -76,18 +76,15 @@ class SiswaController extends Controller
     // Method baru untuk menangani Import
     public function import(Request $request)
     {
-        // Validasi file harus Excel
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv'
+            'file' => 'required|mimes:xlsx,xls'
         ]);
 
         try {
-            // Jalankan proses import
             Excel::import(new SiswaImport, $request->file('file'));
-
             return redirect()->route('admin.siswa.index')->with('success', 'Data Siswa Berhasil Diimport!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal Import: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal: ' . $e->getMessage());
         }
     }
 

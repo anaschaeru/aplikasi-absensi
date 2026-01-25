@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Guru;
 use App\Models\User;
+use App\Imports\GuruImport;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Facades\Excel;
 
 class GuruController extends Controller
 {
@@ -125,5 +127,19 @@ class GuruController extends Controller
 
         return redirect()->route('admin.guru.index')
             ->with('success', 'Guru berhasil dihapus.');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls'
+        ]);
+
+        try {
+            Excel::import(new GuruImport, $request->file('file'));
+            return redirect()->route('admin.guru.index')->with('success', 'Data Guru & Akun Login Berhasil Diimport!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal Import: ' . $e->getMessage());
+        }
     }
 }

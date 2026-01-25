@@ -2,116 +2,69 @@
 
 namespace App\Imports;
 
-use App\Models\JadwalPelajaran;
+use App\Models\JadwalPelajaran; // Asumsi nama model jadwal Anda
 use App\Models\Kelas;
-use App\Models\MataPelajaran;
+use App\Models\MataPelajaran;   // SESUAI REQUEST (Model MataPelajaran)
 use App\Models\Guru;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
-use Carbon\Carbon;
 
-class JadwalPelajaranImport implements ToCollection, WithHeadingRow, WithChunkReading
+class JadwalPelajaranImport implements ToCollection, WithHeadingRow
 {
-    /**
-     * Proses per 100 baris agar aman di hosting
-     */
-    public function chunkSize(): int
-    {
-        return 20;
-    }
-
     public function collection(Collection $rows)
     {
-        DB::reconnect();
-        DB::transaction(function () use ($rows) {
-
-            // 1. Buat Cache Mapping (Nama => ID)
-            // Gunakan mapWithKeys untuk menormalisasi key menjadi UPPERCASE agar pencarian tidak sensitif huruf besar/kecil
-
-            $kelasCache = Kelas::pluck('kelas_id', 'nama_kelas')->mapWithKeys(function ($id, $nama) {
-                return [trim(strtoupper($nama)) => $id];
-            });
-
-            $mapelCache = MataPelajaran::pluck('mapel_id', 'nama_mapel')->mapWithKeys(function ($id, $nama) {
-                return [trim(strtoupper($nama)) => $id];
-            });
-
-            $guruCache = Guru::pluck('guru_id', 'nama_guru')->mapWithKeys(function ($id, $nama) {
-                return [trim(strtoupper($nama)) => $id];
-            });
-
-            $jadwalList = [];
-            $now = now();
-
-            foreach ($rows as $row) {
-                // Validasi kolom wajib
-                if (empty($row['nama_kelas']) || empty($row['nama_mapel']) || empty($row['nama_guru'])) {
-                    continue;
-                }
-
-                // Normalisasi input dari Excel
-                $namaKelas = trim(strtoupper($row['nama_kelas']));
-                $namaMapel = trim(strtoupper($row['nama_mapel']));
-                $namaGuru  = trim(strtoupper($row['nama_guru']));
-
-                // Ambil ID dari Cache
-                $kelasId = $kelasCache[$namaKelas] ?? null;
-                $mapelId = $mapelCache[$namaMapel] ?? null;
-                $guruId  = $guruCache[$namaGuru] ?? null;
-
-                // Lewati jika referensi data tidak ditemukan di database
-                if (!$kelasId || !$mapelId || !$guruId) {
-                    continue;
-                }
-
-                // Parsing Waktu yang Aman (Menangani format Text maupun Format Time Excel)
-                $jamMulai   = $this->parseTime($row['jam_mulai']);
-                $jamSelesai = $this->parseTime($row['jam_selesai']);
-
-                if (!$jamMulai || !$jamSelesai) {
-                    continue; // Skip jika format waktu rusak
-                }
-
-                $jadwalList[] = [
-                    'kelas_id'    => $kelasId,
-                    'mapel_id'    => $mapelId,
-                    'guru_id'     => $guruId,
-                    'hari'        => ucfirst(strtolower(trim($row['hari']))), // Pastikan format "Senin", "Selasa" rapi
-                    'jam_mulai'   => $jamMulai,
-                    'jam_selesai' => $jamSelesai,
-                    'created_at'  => $now,
-                    'updated_at'  => $now,
-                ];
+        foreach ($rows as $row) {
+            // 1. Validasi Data Dasar
+            if (empty($row['nama_kelas']) || empty($row['nama_mapel']) || empty($row['hari'])) {
+                continue;
             }
 
-            // Simpan data sekaligus
-            if (!empty($jadwalList)) {
-                JadwalPelajaran::insert($jadwalList);
+            // 2. Cari ID Kelas
+            $kelas = Kelas::where('nama_kelas', trim($row['nama_kelas']))->first();
+            if (!$kelas) continue;
+
+            // 3. Cari ID Mata Pelajaran (Update Model)
+            // Pastikan kolom di tabel mata_pelajaran namanya 'nama_mapel' atau 'nama_pelajaran'
+            // Sesuaikan 'nama_mapel' dibawah dengan nama kolom di database Anda
+            $mapel = MataPelajaran::where('nama_mapel', trim($row['nama_mapel']))->first();
+
+            if (!$mapel) continue;
+
+            // 4. Cari ID Guru
+            $guru = Guru::where('nama_guru', trim($row['nama_guru']))->first();
+            $guruId = $guru ? $guru->guru_id : null;
+
+            // 5. Konversi Waktu
+            try {
+                $jamMulai = $this->transformTime($row['jam_mulai']);
+                $jamSelesai = $this->transformTime($row['jam_selesai']);
+            } catch (\Exception $e) {
+                continue;
             }
-        });
+
+            // 6. Simpan ke Tabel Jadwal Pelajaran
+            JadwalPelajaran::create([
+                'kelas_id'          => $kelas->id,
+
+                // PENTING: Sesuaikan foreign key ini dengan tabel database Anda.
+                // Jika Modelnya MataPelajaran, biasanya kolomnya 'mata_pelajaran_id'
+                'mata_pelajaran_id' => $mapel->id,
+
+                'guru_id'           => $guruId,
+                'hari'              => ucfirst(strtolower(trim($row['hari']))),
+                'jam_mulai'         => $jamMulai,
+                'jam_selesai'       => $jamSelesai,
+            ]);
+        }
     }
 
-    /**
-     * Helper khusus untuk mengubah format waktu Excel menjadi H:i:s
-     */
-    private function parseTime($timeValue)
+    private function transformTime($value)
     {
-        try {
-            if (empty($timeValue)) return null;
-
-            // Jika formatnya angka desimal Excel (contoh: 0.5416 untuk jam 13:00)
-            if (is_numeric($timeValue)) {
-                return Date::excelToDateTimeObject($timeValue)->format('H:i:s');
-            }
-
-            // Jika formatnya string biasa (contoh: "13:00")
-            return Carbon::parse($timeValue)->format('H:i:s');
-        } catch (\Exception $e) {
-            return null; // Kembalikan null jika gagal parsing
+        if (is_numeric($value)) {
+            return Date::excelToDateTimeObject($value)->format('H:i:s');
         }
+        return date('H:i:s', strtotime($value));
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MataPelajaran;
 use Illuminate\Http\Request;
+use App\Models\MataPelajaran;
 use Illuminate\Validation\Rule;
+use App\Imports\MataPelajaranImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MataPelajaranController extends Controller
 {
@@ -72,5 +74,19 @@ class MataPelajaranController extends Controller
         $mapel->delete();
         return redirect()->route('admin.mapel.index')
             ->with('success', 'Mata pelajaran berhasil dihapus.');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls'
+        ]);
+
+        try {
+            Excel::import(new MataPelajaranImport, $request->file('file'));
+            return redirect()->route('admin.mapel.index')->with('success', 'Data Mata Pelajaran Berhasil Diimport!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal Import: ' . $e->getMessage());
+        }
     }
 }
