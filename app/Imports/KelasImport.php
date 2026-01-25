@@ -3,83 +3,55 @@
 namespace App\Imports;
 
 use App\Models\Kelas;
+use App\Models\Guru;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class KelasImport implements ToCollection, WithHeadingRow, WithChunkReading
+class KelasImport implements ToCollection, WithHeadingRow
 {
-    /**
-     * Proses per 100 baris agar hemat memori di hosting
-     */
-    public function chunkSize(): int
-    {
-        return 20;
-    }
-
     public function collection(Collection $rows)
     {
-        DB::reconnect();
-        // Gunakan transaksi db agar aman
-        DB::transaction(function () use ($rows) {
-            $kelasList = [];
-            $namaKelasInBatch = [];
+        foreach ($rows as $row) {
+            // Validasi: Nama Kelas wajib ada
+            if (empty($row['nama_kelas'])) continue;
 
-            // 1. Kumpulkan semua nama kelas di batch ini
-            foreach ($rows as $row) {
-                if (!empty($row['nama_kelas'])) {
-                    // Normalisasi: Huruf besar semua & hilangkan spasi di awal/akhir
-                    $namaKelasInBatch[] = trim(strtoupper($row['nama_kelas']));
+            $namaKelas = strtoupper(trim($row['nama_kelas']));
+
+            // 1. Cari Wali Kelas (Opsional)
+            $waliKelasId = null;
+            if (!empty($row['nama_wali_kelas'])) {
+                $guru = Guru::where('nama_guru', 'LIKE', '%' . $row['nama_wali_kelas'] . '%')->first();
+                if ($guru) {
+                    $waliKelasId = $guru->guru_id;
                 }
             }
 
-            // 2. Cek ke Database: Kelas mana yang SUDAH ada?
-            // Kita ambil nama kelas yang sudah ada untuk mencegah duplikasi
-            $existingKelas = Kelas::whereIn('nama_kelas', $namaKelasInBatch)
-                ->pluck('nama_kelas')
-                ->toArray();
+            // 2. DETEKSI OTOMATIS TINGKAT (X, XI, XII)
+            // Default tingkat
+            $tingkat = '10'; // Default jika tidak terdeteksi
 
-            $now = now(); // Timestamp seragam
-
-            foreach ($rows as $row) {
-                $rowData = $row->toArray();
-
-                // Validasi: Nama Kelas & Tingkat wajib ada
-                if (empty($rowData['nama_kelas']) || !isset($rowData['tingkat'])) {
-                    continue;
-                }
-
-                // Normalisasi nama kelas
-                $namaKelasClean = trim(strtoupper($rowData['nama_kelas']));
-
-                // 3. LOGIKA PENCEGAHAN DUPLIKAT
-                // Jika nama kelas sudah ada di database, skip/lewati
-                if (in_array($namaKelasClean, $existingKelas)) {
-                    continue;
-                }
-
-                // Cek juga agar tidak ada duplikat ganda di dalam file Excel itu sendiri
-                // (Misal di excel ada 2 baris "X RPL 1")
-                if (isset($kelasList[$namaKelasClean])) {
-                    continue;
-                }
-
-                // Masukkan ke array (gunakan nama kelas sebagai key sementara untuk cegah duplikat internal)
-                $kelasList[$namaKelasClean] = [
-                    'nama_kelas' => $namaKelasClean,
-                    'tingkat'    => $rowData['tingkat'],
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
+            // Cek awalan nama kelas
+            if (str_starts_with($namaKelas, 'XII') || str_starts_with($namaKelas, '12')) {
+                $tingkat = '12';
+            } elseif (str_starts_with($namaKelas, 'XI') || str_starts_with($namaKelas, '11')) {
+                $tingkat = '11';
+            } elseif (str_starts_with($namaKelas, 'X') || str_starts_with($namaKelas, '10')) {
+                $tingkat = '10';
+            } else {
+                // Jika nama kelas aneh (misal "VII A"), coba ambil angka pertamanya
+                // atau biarkan default '10' atau sesuaikan dengan kebutuhan SMP/SD
+                $tingkat = '10';
             }
 
-            // 4. Simpan ke Database
-            if (!empty($kelasList)) {
-                // array_values digunakan untuk mereset key array sebelum insert
-                Kelas::insert(array_values($kelasList));
-            }
-        });
+            // 3. Simpan atau Update Kelas
+            Kelas::updateOrCreate(
+                ['nama_kelas' => $namaKelas],
+                [
+                    'wali_kelas_id' => $waliKelasId,
+                    'tingkat'       => $tingkat, // <--- INI SOLUSINYA
+                ]
+            );
+        }
     }
 }

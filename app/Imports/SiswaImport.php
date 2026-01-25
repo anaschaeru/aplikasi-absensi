@@ -6,97 +6,70 @@ use App\Models\Siswa;
 use App\Models\User;
 use App\Models\Kelas;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB; // Tambahkan DB
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+// Tambahkan BatchSize agar memori lebih hemat
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 
 class SiswaImport implements ToCollection, WithHeadingRow, WithChunkReading
 {
-    // TURUNKAN JADI 10.
-    // Hash password itu berat. Hosting murah tidak kuat hash banyak sekaligus.
+    // Potong proses per 100 baris agar RAM tidak meledak
     public function chunkSize(): int
     {
-        return 10;
+        return 100;
     }
 
     public function collection(Collection $rows)
     {
-        // TRIK RAHASIA: Putus koneksi lama, buat koneksi baru yang segar.
-        DB::connection()->disableQueryLog(); // Hemat memori
+        // --- OPTIMASI 1: HASH PASSWORD DI LUAR LOOP ---
+        // Server hanya mikir 1 kali untuk enkripsi password.
+        // Jika ditaruh di dalam loop, server mikir 1000 kali (Penyebab Lemot).
+        $passwordDefault = Hash::make('password123');
 
-        // Cek koneksi, jika putus, sambung lagi
-        try {
-            DB::reconnect();
-        } catch (\Exception $e) {
-            // Abaikan jika gagal reconnect pertama kali
-        }
+        // --- OPTIMASI 2: AMBIL CACHE KELAS ---
+        // Ambil semua ID kelas ke memori, agar tidak query DB berulang-ulang
+        $kelasCache = Kelas::pluck('kelas_id', 'nama_kelas')->mapWithKeys(function ($item, $key) {
+            return [trim(strtoupper($key)) => $item];
+        });
 
-        DB::transaction(function () use ($rows) {
-
-            // Ambil cache kelas (Optimasi: hanya ambil nama & id)
-            $kelasCache = Kelas::pluck('kelas_id', 'nama_kelas')->mapWithKeys(function ($item, $key) {
-                return [trim(strtoupper($key)) => $item];
-            });
-
-            $usersData = [];
-            $siswasData = [];
-            $emails = [];
-            $passwordHash = Hash::make('password'); // OPTIMASI: Hash sekali saja untuk semua siswa (biar cepat)
-            $now = now();
+        // --- OPTIMASI 3: GUNAKAN TRANSACTION ---
+        // Jika gagal di tengah, semua batal (Database bersih).
+        // Ini juga mempercepat proses insert ke database.
+        DB::transaction(function () use ($rows, $passwordDefault, $kelasCache) {
 
             foreach ($rows as $row) {
+                // Validasi data kosong
                 if (empty($row['nama_siswa']) || empty($row['email'])) continue;
 
-                $namaKelas = trim(strtoupper($row['nama_kelas']));
-                $kelasId = $kelasCache[$namaKelas] ?? null;
+                // Cari ID Kelas dari Cache (Cepat)
+                $namaKelasExcel = trim(strtoupper($row['nama_kelas']));
+                $kelasId = $kelasCache[$namaKelasExcel] ?? null;
 
+                // Jika kelas tidak ditemukan, lewati (atau set default)
                 if (!$kelasId) continue;
 
-                $email = trim($row['email']);
+                // 1. Buat/Cari User (Pakai password yang sudah di-hash di atas)
+                $user = User::firstOrCreate(
+                    ['email' => $row['email']],
+                    [
+                        'name' => $row['nama_siswa'],
+                        'password' => $passwordDefault, // <--- PAKAI INI (CEPAT!)
+                        'role' => 'siswa',
+                    ]
+                );
 
-                $usersData[] = [
-                    'name'       => $row['nama_siswa'],
-                    'email'      => $email,
-                    'password'   => $passwordHash, // Pakai hash yang sudah dibuat di atas
-                    'role'       => 'siswa',
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-
-                $emails[] = $email;
-
-                $siswasData[$email] = [
-                    'kelas_id'   => $kelasId,
-                    'nis'        => $row['nis'],
-                    'nama_siswa' => $row['nama_siswa'],
-                    'alamat'     => $row['alamat'],
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-            }
-
-            // Simpan User
-            if (!empty($usersData)) {
-                // Insert Ignore (agar jika email duplikat tidak error stop)
-                User::insertOrIgnore($usersData);
-
-                // Ambil ID User
-                $users = User::whereIn('email', $emails)->pluck('id', 'email');
-
-                $finalSiswasData = [];
-                foreach ($siswasData as $email => $dataSiswa) {
-                    if (isset($users[$email])) {
-                        $dataSiswa['user_id'] = $users[$email];
-                        $finalSiswasData[] = $dataSiswa;
-                    }
-                }
-
-                // Simpan Siswa
-                if (!empty($finalSiswasData)) {
-                    Siswa::insertOrIgnore($finalSiswasData);
-                }
+                // 2. Update/Buat Siswa
+                Siswa::updateOrCreate(
+                    ['nis' => $row['nis']],
+                    [
+                        'user_id' => $user->id,
+                        'kelas_id' => $kelasId,
+                        'nama_siswa' => $row['nama_siswa'],
+                        'alamat' => $row['alamat'] ?? '-',
+                    ]
+                );
             }
         });
     }

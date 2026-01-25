@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kelas;
-use App\Models\Guru; // Import model Guru untuk dropdown wali kelas
+use App\Imports\KelasImport;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Validation\Rule; // Import Rule untuk validasi unik
+use App\Models\Guru; // Import model Guru untuk dropdown wali kelas
 
 class KelasController extends Controller
 {
@@ -84,5 +86,20 @@ class KelasController extends Controller
 
         return redirect()->route('admin.kelas.index')
             ->with('success', 'Kelas berhasil dihapus.');
+    }
+
+    // TAMBAHKAN FUNCTION INI
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        try {
+            Excel::import(new KelasImport, $request->file('file'));
+            return redirect()->route('admin.kelas.index')->with('success', 'Data Kelas Berhasil Diimport!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal Import: ' . $e->getMessage());
+        }
     }
 }

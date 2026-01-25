@@ -73,26 +73,21 @@ class SiswaController extends Controller
      * FUNGSI BARU: IMPORT EXCEL
      * Dilengkapi dengan booster memori dan waktu eksekusi.
      */
+    // Method baru untuk menangani Import
     public function import(Request $request)
     {
-        // 1. Validasi File
+        // Validasi file harus Excel
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv'
         ]);
 
-        // 2. BOOSTER SERVER (PENTING UNTUK SHARED HOSTING)
-        // Ini mencegah error "504 Gateway Timeout" atau "MySQL Gone Away"
-        ini_set('max_execution_time', 600); // 10 Menit
-        ini_set('memory_limit', '512M');    // 512 MegaBytes
-
-        // 3. Eksekusi Import
         try {
+            // Jalankan proses import
             Excel::import(new SiswaImport, $request->file('file'));
 
-            return back()->with('success', 'Data siswa berhasil diimpor!');
+            return redirect()->route('admin.siswa.index')->with('success', 'Data Siswa Berhasil Diimport!');
         } catch (\Exception $e) {
-            // Tampilkan pesan error yang jelas jika gagal
-            return back()->with('error', 'Gagal Impor: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal Import: ' . $e->getMessage());
         }
     }
 
