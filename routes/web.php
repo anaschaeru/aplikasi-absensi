@@ -155,6 +155,8 @@ Route::middleware(['auth', 'role:walikelas'])->prefix('walikelas')->name('walike
     Route::get('/rekap-harian', [WalikelasController::class, 'rekapHarian'])->name('rekap.harian');
     // Route untuk update status harian manual
     Route::post('/rekap-harian/update', [WalikelasController::class, 'updateStatus'])->name('rekap.harian.update');
+
+    Route::get('/rekap-harian/export-pdf', [WalikelasController::class, 'cetakPdf'])->name('rekap.export');
 });
 
 // Rute Autentikasi dari Breeze

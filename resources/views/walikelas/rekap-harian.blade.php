@@ -19,18 +19,32 @@
       <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <form action="{{ route('walikelas.rekap.harian') }}" method="GET" class="mb-6">
           <div class="flex flex-col md:flex-row items-end gap-4">
+
+            {{-- Input Tanggal --}}
             <div class="w-full md:w-auto">
               <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-1">Pilih Tanggal</label>
               <input type="date" name="tanggal" id="tanggal" value="{{ $tanggal }}"
                 class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 onchange="this.form.submit()">
             </div>
+
             <div class="flex-grow"></div>
-            <div class="w-full md:w-auto">
-              <button type="button" onclick="window.print()"
-                class="w-full px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition">
-                <i class="fas fa-print mr-2"></i> Cetak Laporan
-              </button>
+
+            {{-- Group Tombol Aksi --}}
+            <div class="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+
+              {{-- TOMBOL UTAMA: EXPORT PDF (Download) --}}
+              {{-- Perhatikan route name dan icon download --}}
+              <a href="{{ route('walikelas.rekap.export', ['tanggal' => $tanggal]) }}"
+                class="inline-flex justify-center items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition w-full md:w-auto shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export PDF
+              </a>
+
             </div>
           </div>
         </form>
@@ -92,10 +106,10 @@
                       @if ($absen)
                         <span
                           class="px-2 py-1 text-xs font-semibold rounded-full
-                                                    {{ $absen->status == 'Hadir' ? 'bg-green-100 text-green-800' : '' }}
-                                                    {{ $absen->status == 'Sakit' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                                    {{ $absen->status == 'Izin' ? 'bg-blue-100 text-blue-800' : '' }}
-                                                    {{ $absen->status == 'Alfa' ? 'bg-red-100 text-red-800' : '' }}">
+                                                                                        {{ $absen->status == 'Hadir' ? 'bg-green-100 text-green-800' : '' }}
+                                                                                        {{ $absen->status == 'Sakit' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                                                                        {{ $absen->status == 'Izin' ? 'bg-blue-100 text-blue-800' : '' }}
+                                                                                        {{ $absen->status == 'Alfa' ? 'bg-red-100 text-red-800' : '' }}">
                           {{ $absen->status }}
                         </span>
                       @else
@@ -105,7 +119,7 @@
                       @endif
                     </td>
 
-                    {{-- Waktu Masuk & Foto (UPDATE LOGIKA TAMPILAN) --}}
+                    {{-- Waktu Masuk & Foto --}}
                     <td class="px-4 py-3 text-center text-sm text-gray-600">
                       @if ($absen && $absen->waktu_masuk && $absen->status == 'Hadir')
                         <div class="font-bold">{{ \Carbon\Carbon::parse($absen->waktu_masuk)->format('H:i') }}</div>
@@ -284,7 +298,9 @@
       button,
       input[type="date"],
       label,
-      .shadow-sm {
+      .shadow-sm,
+      a[href*="export"] {
+        /* Update Selector agar tombol export juga hilang */
         display: none !important;
       }
 
