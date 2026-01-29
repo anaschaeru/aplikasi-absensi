@@ -29,4 +29,12 @@ class AbsensiHarian extends Model
         'foto_masuk',
         'foto_pulang'
     ];
+
+    /**
+     * Relasi ke Siswa.
+     */
+    public function siswa()
+    {
+        return $this->belongsTo(Siswa::class, 'siswa_id', 'siswa_id'); // <-- Pastikan foreign key-nya juga benar
+    }
 }
