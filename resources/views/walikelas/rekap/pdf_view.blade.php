@@ -83,9 +83,9 @@
 
     /* === FOTO UTAMA (DIPERBESAR) === */
     .thumb {
-      width: 52px;
+      width: 80px;
       /* <--- UKURAN DIPERBESAR (Sebelumnya 38px) */
-      height: 52px;
+      height: 80px;
       /* Aspect Ratio Kotak */
       object-fit: cover;
       border: 1px solid #999;
@@ -95,8 +95,8 @@
 
     /* Placeholder jika tidak ada foto */
     .no-thumb {
-      width: 52px;
-      height: 52px;
+      width: 80px;
+      height: 80px;
       border: 1px dashed #ccc;
       display: inline-block;
       line-height: 52px;
@@ -108,7 +108,7 @@
     /* === JAM === */
     .jam {
       display: block;
-      font-size: 8pt;
+      font-size: 6pt;
       font-weight: bold;
       margin-top: 2px;
       color: #333;
