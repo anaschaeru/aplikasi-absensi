@@ -304,7 +304,7 @@
         if (!nis || nis.trim() === "") return;
         showStatusMessage('Memproses data...', 'success');
 
-        axios.post('{{ route('guru.piket.record') }}', {
+        axios.post('{{ route('piket.record') }}', {
             siswa_id: nis,
             image: imageBase64,
             _token: "{{ csrf_token() }}"
@@ -325,7 +325,7 @@
               delete swalOptions.icon;
             }
             Swal.fire(swalOptions);
-            axios.get('{{ route('guru.piket.dashboard.data') }}').then(res => renderDashboard(res.data));
+            axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
             if (activeMode === 'scanner') {
               const input = document.getElementById('scanner_input');
               input.value = '';
@@ -519,7 +519,7 @@
         }).then((result) => {
           if (result.isConfirmed) {
             showStatusMessage(`Memproses ${siswaNama}...`, 'success');
-            axios.post('{{ route('guru.piket.hadirkan.manual') }}', {
+            axios.post('{{ route('piket.hadirkan.manual') }}', {
                 siswa_id: siswaId,
                 _token: "{{ csrf_token() }}"
               })
@@ -529,7 +529,7 @@
                 if (siswaRow) {
                   siswaRow.classList.add('opacity-0', 'scale-95');
                   setTimeout(() => {
-                    axios.get('{{ route('guru.piket.dashboard.data') }}').then(res => renderDashboard(res.data));
+                    axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
                   }, 300);
                 }
               }).catch(error => {

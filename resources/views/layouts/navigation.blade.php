@@ -73,7 +73,6 @@
             @endif
 
             {{-- 3. MENU RIWAYAT ABSENSI (Hanya Guru, Wali Kelas, Guru Piket) --}}
-            {{-- Admin biasanya tidak absen mengajar, jadi disembunyikan untuk Admin --}}
             @if (in_array(auth()->user()->role, ['guru', 'guru_piket', 'walikelas']))
               <x-nav-link :href="route('guru.absensi.history')" :active="request()->routeIs('guru.absensi.history')">
                 {{ __('Riwayat Absensi') }}
@@ -81,12 +80,11 @@
             @endif
 
             {{-- 4. MENU PIKET & IZIN (SEMUA ROLE KECUALI SISWA) --}}
-            {{-- Admin, Guru, Wali Kelas, dan Guru Piket bisa akses ini --}}
             @if (auth()->user()->role !== 'siswa')
-              <x-nav-link :href="route('guru.piket.dashboard')" :active="request()->routeIs('guru.piket.dashboard')">
+              <x-nav-link :href="route('piket.dashboard')" :active="request()->routeIs('piket.dashboard')">
                 {{ __('Dasbor Piket') }}
               </x-nav-link>
-              <x-nav-link :href="route('guru.piket.izin.index')" :active="request()->routeIs('guru.piket.izin.*')">
+              <x-nav-link :href="route('piket.izin.index')" :active="request()->routeIs('piket.izin.*')">
                 {{ __('Manajemen Izin') }}
               </x-nav-link>
             @endif
@@ -107,6 +105,7 @@
       {{-- Settings Dropdown (Desktop) --}}
       <div class="hidden sm:flex sm:items-center sm:ms-6">
         @auth
+          {{-- JIKA SUDAH LOGIN --}}
           <x-dropdown align="right" width="48">
             <x-slot name="trigger">
               <button
@@ -130,6 +129,12 @@
               </form>
             </x-slot>
           </x-dropdown>
+        @else
+          {{-- JIKA BELUM LOGIN (MODE PIKET/GUEST) --}}
+          <a href="{{ route('login') }}"
+            class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+            {{ __('Login Petugas') }}
+          </a>
         @endauth
       </div>
 
@@ -247,10 +252,10 @@
 
         {{-- 4. MENU PIKET & IZIN (SEMUA ROLE KECUALI SISWA) --}}
         @if (auth()->user()->role !== 'siswa')
-          <x-responsive-nav-link :href="route('guru.piket.dashboard')" :active="request()->routeIs('guru.piket.dashboard')">
+          <x-responsive-nav-link :href="route('piket.dashboard')" :active="request()->routeIs('piket.dashboard')">
             {{ __('Dasbor Piket') }}
           </x-responsive-nav-link>
-          <x-responsive-nav-link :href="route('guru.piket.izin.index')" :active="request()->routeIs('guru.piket.izin.*')">
+          <x-responsive-nav-link :href="route('piket.izin.index')" :active="request()->routeIs('piket.izin.*')">
             {{ __('Manajemen Izin') }}
           </x-responsive-nav-link>
         @endif
@@ -270,6 +275,7 @@
     {{-- Mobile User Options --}}
     <div class="pt-4 pb-1 border-t border-gray-200 bg-gray-50">
       @auth
+        {{-- JIKA SUDAH LOGIN --}}
         <div class="px-4">
           <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
           <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
@@ -281,6 +287,13 @@
               {{ __('Log Out') }}
             </x-responsive-nav-link>
           </form>
+        </div>
+      @else
+        {{-- JIKA BELUM LOGIN (GUEST) --}}
+        <div class="mt-3 space-y-1">
+          <x-responsive-nav-link :href="route('login')">
+            {{ __('Login Petugas') }}
+          </x-responsive-nav-link>
         </div>
       @endauth
     </div>
