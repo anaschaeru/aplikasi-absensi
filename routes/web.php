@@ -1,25 +1,26 @@
 <?php
 
+use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\Admin\LaporanHarianController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Guru\IzinController as GuruIzinController;
+use App\Http\Controllers\GuruController;
+use App\Http\Controllers\GuruDashboardController;
+use App\Http\Controllers\GuruPiketController;
+use App\Http\Controllers\ImportController;
+use App\Http\Controllers\JadwalPelajaranController;
+use App\Http\Controllers\KelasController;
+use App\Http\Controllers\LaporanAbsensiController;
+use App\Http\Controllers\MataPelajaranController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RekapAbsensiController;
+use App\Http\Controllers\Siswa\IzinController as SiswaIzinController;
+use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\SiswaDashboardController;
+use App\Http\Controllers\WalikelasController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GuruController;
-use App\Http\Controllers\KelasController;
-use App\Http\Controllers\SiswaController;
-use App\Http\Controllers\ImportController;
-use App\Http\Controllers\AbsensiController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\GuruPiketController;
-use App\Http\Controllers\WalikelasController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Siswa\IzinController as SiswaIzinController;
-use App\Http\Controllers\Guru\IzinController as GuruIzinController;
-use App\Http\Controllers\RekapAbsensiController;
-use App\Http\Controllers\GuruDashboardController;
-use App\Http\Controllers\MataPelajaranController;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\LaporanAbsensiController;
-use App\Http\Controllers\SiswaDashboardController;
-use App\Http\Controllers\JadwalPelajaranController;
 
 /*
 |--------------------------------------------------------------------------
@@ -94,6 +95,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/laporan/absensi', [LaporanAbsensiController::class, 'index'])->name('laporan.absensi.index');
     Route::get('/laporan/absensi/export-excel', [LaporanAbsensiController::class, 'exportExcel'])->name('laporan.absensi.export.excel');
     Route::get('/laporan/absensi/export-pdf', [LaporanAbsensiController::class, 'exportPdf'])->name('laporan.absensi.export.pdf');
+
+    Route::get('/laporan/harian', [LaporanHarianController::class, 'index'])->name('laporan.harian');
+
+    Route::get('/laporan/harian/excel', [LaporanHarianController::class, 'exportExcel'])->name('laporan.harian.excel');
+    Route::get('/laporan/harian/pdf', [LaporanHarianController::class, 'exportPdf'])->name('laporan.harian.pdf');
 
     Route::get('/import', [ImportController::class, 'index'])->name('import.index');
     Route::post('/import', [ImportController::class, 'store'])->name('import.store');

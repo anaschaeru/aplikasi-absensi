@@ -12,8 +12,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
       {{-- Quick Actions --}}
-      {{-- Mobile: grid-cols-2 (agar hemat tempat), Desktop: grid-cols-4 --}}
-      <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      {{-- Mobile: grid-cols-2, Tablet: grid-cols-3, Desktop: grid-cols-5 (Agar ke-5 menu muat) --}}
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+
         <a href="{{ route('admin.siswa.index') }}"
           class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 sm:py-4 px-3 rounded-lg shadow-md text-center transition duration-300 flex flex-col sm:flex-row items-center justify-center">
           <svg class="w-8 h-8 sm:w-6 sm:h-6 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,6 +25,20 @@
           <span class="text-xs sm:text-base">Siswa</span>
         </a>
 
+        {{-- MENU BARU: LAPORAN HARIAN --}}
+        <a href="{{ route('admin.laporan.harian') }}"
+          class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 sm:py-4 px-3 rounded-lg shadow-md text-center transition duration-300 flex flex-col sm:flex-row items-center justify-center">
+          <svg class="w-8 h-8 sm:w-6 sm:h-6 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14h.01M16 14h.01M8 14h.01">
+            </path>
+          </svg>
+          <span class="text-xs sm:text-base">Lap. Harian</span>
+        </a>
+
         <a href="{{ route('admin.laporan.absensi.index') }}"
           class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 sm:py-4 px-3 rounded-lg shadow-md text-center transition duration-300 flex flex-col sm:flex-row items-center justify-center">
           <svg class="w-8 h-8 sm:w-6 sm:h-6 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor"
@@ -32,7 +47,7 @@
               d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
             </path>
           </svg>
-          <span class="text-xs sm:text-base">Laporan</span>
+          <span class="text-xs sm:text-base">Lap. Umum</span>
         </a>
 
         <a href="{{ route('admin.jadwal.index') }}"
@@ -40,7 +55,7 @@
           <svg class="w-8 h-8 sm:w-6 sm:h-6 mb-1 sm:mb-0 sm:mr-2" fill="none" stroke="currentColor"
             viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
             </path>
           </svg>
           <span class="text-xs sm:text-base">Jadwal</span>
@@ -64,14 +79,12 @@
         {{-- Kolom Kiri: Grafik Absensi --}}
         <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-lg shadow-sm">
           <h3 class="font-bold text-lg mb-4 text-gray-800">Absensi Hari Ini</h3>
-          {{-- Tinggi grafik responsif: h-64 di mobile, h-80 di desktop --}}
           <div class="h-64 sm:h-80 w-full relative">
             <canvas id="absensiChart"></canvas>
           </div>
         </div>
 
         {{-- Kolom Kanan: Statistik Utama --}}
-        {{-- Di Mobile: Grid 2 kolom agar hemat tempat vertikal. Di Desktop: Grid 1 kolom (stacked) --}}
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-4">
           <div class="bg-white p-4 sm:p-6 rounded-lg shadow-sm flex flex-col justify-center">
             <h3 class="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Total Guru</h3>
@@ -109,12 +122,14 @@
                     </p>
                     <p class="text-xs text-gray-500 truncate">
                       {{ $absensi->siswa->kelas->nama_kelas }} •
-                      {{ \Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i') }}
+                      Masuk: {{ \Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i') }} •
+                      Pulang:
+                      {{ $absensi->waktu_pulang ? \Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i') : '-' }}
                     </p>
                   </div>
                   <div class="shrink-0">
                     <span class="px-2 py-1 text-xs font-semibold leading-5 text-green-800 bg-green-100 rounded-full">
-                      Masuk
+                      {{ $absensi->status }}
                     </span>
                   </div>
                 </div>
@@ -193,17 +208,17 @@
         data: data,
         options: {
           responsive: true,
-          maintainAspectRatio: false, // Penting agar grafik mau mengikuti container h-64
+          maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'bottom', // Legend di bawah agar grafik lebih besar di HP
+              position: 'bottom',
               labels: {
                 padding: 20,
                 usePointStyle: true,
               }
             }
           },
-          cutout: '65%', // Membuat donat sedikit lebih tipis agar modern
+          cutout: '65%',
         },
       };
 
