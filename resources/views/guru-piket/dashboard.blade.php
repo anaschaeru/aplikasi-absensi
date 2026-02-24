@@ -29,15 +29,13 @@
 
       {{-- Grid Utama 3 Kolom --}}
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- Kolom 1: Aktivitas Terbaru --}}
+
+        {{-- Kolom 1: Daftar Siswa Belum Hadir --}}
         <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-          <h3 class="font-bold text-lg mb-4">Aktivitas Terbaru</h3>
-          <div class="overflow-y-auto h-96">
-            <div id="aktivitas-terbaru" class="space-y-4">
-              @include('guru-piket._aktivitas_terbaru', [
-                  'aktivitasTerbaru' => $aktivitasTerbaru,
-              ])
-            </div>
+          <h3 id="judul-belum-hadir" class="font-bold text-lg mb-4">Daftar Siswa Belum Hadir
+            ({{ $siswaBelumHadir->count() }})</h3>
+          <div id="daftar-belum-hadir" class="overflow-y-auto h-96 space-y-2 pr-2">
+            @include('guru-piket._siswa_belum_hadir', ['siswaBelumHadir' => $siswaBelumHadir])
           </div>
         </div>
 
@@ -97,12 +95,15 @@
           </div>
         </div>
 
-        {{-- Kolom 3: Daftar Siswa Belum Hadir --}}
+        {{-- Kolom 3: Aktivitas Terbaru --}}
         <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-          <h3 id="judul-belum-hadir" class="font-bold text-lg mb-4">Daftar Siswa Belum Hadir
-            ({{ $siswaBelumHadir->count() }})</h3>
-          <div id="daftar-belum-hadir" class="overflow-y-auto h-96 space-y-2 pr-2">
-            @include('guru-piket._siswa_belum_hadir', ['siswaBelumHadir' => $siswaBelumHadir])
+          <h3 class="font-bold text-lg mb-4">Aktivitas Terbaru</h3>
+          <div class="overflow-y-auto h-96">
+            <div id="aktivitas-terbaru" class="space-y-4">
+              @include('guru-piket._aktivitas_terbaru', [
+                  'aktivitasTerbaru' => $aktivitasTerbaru,
+              ])
+            </div>
           </div>
         </div>
       </div>
@@ -198,34 +199,33 @@
       let isScanning = true;
       let html5QrCode;
       let activeMode = 'camera';
-      let scannerDebounceTimer;
       let isFaceModelLoaded = false;
 
-      // --- 1. LOAD MODEL WAJAH (PERBAIKAN) ---
+      // Konfigurasi Notifikasi Cepat (Toast) non-blocking
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true,
+      });
+
+      // --- 1. LOAD MODEL WAJAH ---
       async function loadFaceModels() {
         try {
-          // Tampilkan loading di status
           showStatusMessage("Sedang mengunduh model AI...", "warning");
-
-          // Disable input scanner agar user tidak scan duluan
           const inputScanner = document.getElementById('scanner_input');
           if (inputScanner) inputScanner.disabled = true;
 
-          // Gunakan asset() Laravel agar path dinamis.
-          // Pastikan folder 'models' ada di folder 'public' hosting Anda.
           const modelUrl = "{{ asset('models') }}";
+          console.log("Memulai load model dari: " + modelUrl);
 
-          console.log("Memulai load model dari: " + modelUrl); // Cek Console browser
-
-          // Load Model
           await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
 
-          // Jika berhasil
           isFaceModelLoaded = true;
           console.log("Model Wajah SIAP!");
           showStatusMessage("Sistem Siap. Silahkan Scan.", "success");
 
-          // Enable input scanner kembali
           if (inputScanner) {
             inputScanner.disabled = false;
             inputScanner.focus();
@@ -234,8 +234,6 @@
         } catch (error) {
           console.error("GAGAL MEMUAT MODEL:", error);
           showStatusMessage("Gagal memuat AI Wajah. Cek Koneksi/Console.", "error");
-
-          // Cek detail error
           alert("Error loading model: " + JSON.stringify(error));
         }
       }
@@ -267,31 +265,24 @@
         return imageBase64;
       }
 
-      // --- 4. LOGIKA UTAMA (SCANNER ALAT) ---
+      // --- 4. LOGIKA UTAMA ---
       async function validateAndSubmit(nis) {
         showStatusMessage('Mendeteksi wajah...', 'warning');
         const hasFace = await checkFaceExist();
+        const input = document.getElementById('scanner_input');
 
         if (!hasFace) {
-          // TAMBAHAN: Lepas fokus dari input scanner agar tidak bentrok dengan aria-hidden Swal
-          const input = document.getElementById('scanner_input');
-          if (input) input.blur();
-
           showStatusMessage('Wajah tidak terdeteksi!', 'error');
-          Swal.fire({
-            title: 'Akses Ditolak!',
-            html: 'Wajah siswa tidak terdeteksi.<br><b>Harap menghadap ke kamera.</b>',
-            icon: 'warning',
-            timer: 1000,
-            showConfirmButton: false
 
-          }).then(() => {
-            // Kembalikan fokus setelah swal ditutup
-            if (input) {
-              input.value = '';
-              setTimeout(() => input.focus(), 500); // Beri jeda sedikit
-            }
+          Toast.fire({
+            icon: 'warning',
+            title: 'Wajah tidak terdeteksi. Harap menghadap kamera!'
           });
+
+          if (input) {
+            input.value = '';
+            input.focus();
+          }
           return;
         }
 
@@ -311,44 +302,32 @@
           })
           .then(response => {
             showStatusMessage(response.data.message, 'success');
-            let swalOptions = {
-              title: 'Berhasil!',
-              text: response.data.message,
+
+            Toast.fire({
               icon: 'success',
-              timer: 2000,
-              showConfirmButton: false
-            };
-            if (imageBase64) {
-              swalOptions.imageUrl = imageBase64;
-              swalOptions.imageHeight = 200;
-              swalOptions.imageAlt = 'Foto Siswa';
-              delete swalOptions.icon;
-            }
-            Swal.fire(swalOptions);
+              title: response.data.message
+            });
+
             axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
-            if (activeMode === 'scanner') {
-              const input = document.getElementById('scanner_input');
-              input.value = '';
-              input.focus();
-            }
           })
           .catch(error => {
             let msg = error.response ? error.response.data.message : 'Terjadi kesalahan sistem';
             showStatusMessage(msg, 'error');
-            Swal.fire({
-              title: 'Gagal!',
-              text: msg,
+
+            Toast.fire({
               icon: 'error',
-              timer: 1500,
-              showConfirmButton: false
+              title: msg
             });
-            if (activeMode === 'scanner') {
-              const input = document.getElementById('scanner_input');
-              input.value = '';
-              input.focus();
-            }
           })
           .finally(() => {
+            if (activeMode === 'scanner') {
+              const input = document.getElementById('scanner_input');
+              if (input) {
+                input.value = '';
+                input.focus();
+              }
+            }
+
             if (activeMode === 'camera' && html5QrCode) {
               setTimeout(() => {
                 isScanning = true;
@@ -361,27 +340,26 @@
       // --- 6. EVENT LISTENER SCANNER GUN ---
       const scannerInput = document.getElementById('scanner_input');
       if (scannerInput) {
-        scannerInput.addEventListener('input', function() {
-          clearTimeout(scannerDebounceTimer);
-          scannerDebounceTimer = setTimeout(() => {
-            const nis = this.value.trim();
-            if (nis.length > 0) {
-              validateAndSubmit(nis);
-            }
-          }, 300);
-        });
         scannerInput.addEventListener('keydown', function(e) {
           if (e.key === 'Enter') {
             e.preventDefault();
-            clearTimeout(scannerDebounceTimer);
             const nis = this.value.trim();
             if (nis.length > 0) {
+              this.value = ''; // Kosongkan instan
               validateAndSubmit(nis);
             }
           }
         });
+
         document.getElementById('mode-scanner-container').addEventListener('click', function() {
           scannerInput.focus();
+        });
+
+        // Auto-focus jika klik di luar
+        document.addEventListener('click', function(e) {
+          if (activeMode === 'scanner' && e.target.id !== 'scanner_input' && !e.target.closest('button')) {
+            scannerInput.focus();
+          }
         });
       }
 
@@ -412,7 +390,6 @@
           btnCamera.classList.remove(...activeClass);
           btnCamera.classList.add(...inactiveClass);
 
-          // Tampilkan Input, tapi biarkan kamera tetap visible
           scannerContainer.classList.remove('hidden');
           overlayText.textContent = "Kamera Aktif (Preview)";
 
@@ -559,6 +536,7 @@
           searchInputTab.dispatchEvent(new Event('input'));
         }
       }
+
       if (searchInputTab) {
         searchInputTab.addEventListener('input', function() {
           const searchTerm = this.value.toLowerCase();
@@ -585,6 +563,7 @@
           });
         });
       }
+
       document.addEventListener('DOMContentLoaded', () => {
         if (tabContents.length > 0) {
           tabContents.forEach((c, i) => {
