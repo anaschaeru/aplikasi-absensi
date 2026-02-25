@@ -109,7 +109,7 @@
       </div>
 
       {{-- BAGIAN JADWAL --}}
-      <div class="mt-8 bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      {{-- <div class="mt-8 bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-4 sm:p-6">
           <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
             <h3 class="text-xl font-bold text-gray-800">Jadwal Pelajaran Lengkap</h3>
@@ -173,7 +173,7 @@
           </div>
         </div>
 
-      </div>
+      </div> --}}
     </div>
   @endsection
 
@@ -191,6 +191,28 @@
         object-fit: cover !important;
         border-radius: 8px;
       }
+
+      /* --- TAMBAHAN CSS UNTUK TOAST JUMBO --- */
+      .toast-besar {
+        width: 400px !important;
+        /* Lebar popup diperbesar lagi */
+        padding: 10px !important;
+        /* Jarak ruang dalam diperbesar lagi */
+        border-radius: 16px !important;
+      }
+
+      .toast-judul-besar {
+        font-size: 18px !important;
+        /* Ukuran font judul (Nama/Kelas) SANGAT BESAR */
+        /* line-height: 1.5 !important; */
+      }
+
+      .toast-pesan-besar {
+        font-size: 26px !important;
+        font-weight: bold !important;
+        /* Ukuran font pesan SANGAT BESAR */
+        /* margin-top: px !important; */
+      }
     </style>
 
     <script>
@@ -198,16 +220,21 @@
       let statusTimeout;
       let isScanning = true;
       let html5QrCode;
-      let activeMode = 'camera';
+      let activeMode = 'camera'; // Default mode
       let isFaceModelLoaded = false;
 
-      // Konfigurasi Notifikasi Cepat (Toast) non-blocking
+      // Konfigurasi Notifikasi Cepat (Toast) non-blocking JUMBO
       const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 1500,
+        timer: 3000, // Waktu saya naikkan sedikit lagi ke 3.5 detik
         timerProgressBar: true,
+        customClass: {
+          popup: 'toast-besar', // Memanggil CSS ukuran popup jumbo
+          title: 'toast-judul-besar', // Memanggil CSS ukuran font judul jumbo
+          htmlContainer: 'toast-pesan-besar' // Memanggil CSS ukuran font teks/pesan jumbo
+        }
       });
 
       // --- 1. LOAD MODEL WAJAH ---
@@ -218,70 +245,84 @@
           if (inputScanner) inputScanner.disabled = true;
 
           const modelUrl = "{{ asset('models') }}";
-          console.log("Memulai load model dari: " + modelUrl);
-
           await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
 
           isFaceModelLoaded = true;
-          console.log("Model Wajah SIAP!");
           showStatusMessage("Sistem Siap. Silahkan Scan.", "success");
 
           if (inputScanner) {
             inputScanner.disabled = false;
             inputScanner.focus();
           }
-
         } catch (error) {
-          console.error("GAGAL MEMUAT MODEL:", error);
-          showStatusMessage("Gagal memuat AI Wajah. Cek Koneksi/Console.", "error");
-          alert("Error loading model: " + JSON.stringify(error));
+          showStatusMessage("Gagal memuat AI Wajah.", "error");
         }
       }
 
-      // --- 2. DETEKSI WAJAH ---
+      // --- 2. DETEKSI WAJAH (DIPERCEPAT) ---
       async function checkFaceExist() {
-        if (!isFaceModelLoaded) {
-          console.warn("Model wajah belum siap.");
-          return false;
-        }
+        if (!isFaceModelLoaded) return false;
+
         const videoElement = document.querySelector('#reader video');
         if (!videoElement || videoElement.paused || videoElement.ended) return false;
-        const detections = await faceapi.detectSingleFace(videoElement, new faceapi.TinyFaceDetectorOptions());
+
+        // OPTIMASI: inputSize dikecilkan agar proses CPU 3x lipat lebih cepat
+        const options = new faceapi.TinyFaceDetectorOptions({
+          inputSize: 160,
+          scoreThreshold: 0.4
+        });
+        const detections = await faceapi.detectSingleFace(videoElement, options);
         return !!detections;
       }
 
-      // --- 3. CAPTURE FOTO ---
+      // --- 3. CAPTURE FOTO (DIKOMPRESI) ---
       function capturePhoto() {
         let imageBase64 = null;
         const videoElement = document.querySelector('#reader video');
         if (videoElement && videoElement.readyState === 4) {
           const canvas = document.createElement('canvas');
-          canvas.width = videoElement.videoWidth;
-          canvas.height = videoElement.videoHeight;
+
+          // OPTIMASI: Compress gambar agar pengiriman jaringan sangat cepat
+          const MAX_WIDTH = 400;
+          const scale = MAX_WIDTH / videoElement.videoWidth;
+          canvas.width = MAX_WIDTH;
+          canvas.height = videoElement.videoHeight * scale;
+
           const context = canvas.getContext('2d');
           context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-          imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+          // Kompres kualitas jpeg ke 60%
+          imageBase64 = canvas.toDataURL('image/jpeg', 0.6);
         }
         return imageBase64;
       }
 
       // --- 4. LOGIKA UTAMA ---
       async function validateAndSubmit(nis) {
-        showStatusMessage('Mendeteksi wajah...', 'warning');
+        // Tampilkan indikator instan
+        scanStatusContainer.innerHTML =
+          `<div class="p-3 rounded-lg bg-blue-100 text-blue-700 text-sm font-bold text-center">Memproses...</div>`;
+
         const hasFace = await checkFaceExist();
         const input = document.getElementById('scanner_input');
 
         if (!hasFace) {
           showStatusMessage('Wajah tidak terdeteksi!', 'error');
-
           Toast.fire({
             icon: 'warning',
-            title: 'Wajah tidak terdeteksi. Harap menghadap kamera!'
+            title: 'Wajah tidak terdeteksi!'
           });
-
           if (input) {
             input.value = '';
             input.focus();
+          }
+
+          // Jika gagal, langsung aktifkan scanner lagi
+          if (activeMode === 'camera' && html5QrCode) {
+            setTimeout(() => {
+              isScanning = true;
+              html5QrCode.resume();
+            }, 500);
           }
           return;
         }
@@ -290,10 +331,23 @@
         processAbsensi(nis, photo);
       }
 
-      // --- 5. PROSES KIRIM DATA ---
+      // --- 5. PROSES KIRIM DATA (TANPA RELOAD DASHBOARD BERAT) ---
       function processAbsensi(nis, imageBase64 = null) {
         if (!nis || nis.trim() === "") return;
-        showStatusMessage('Memproses data...', 'success');
+
+        // AMBIL DATA NAMA DAN KELAS DARI DOM (Sebelum Dihapus)
+        let namaSiswa = nis;
+        let kelasSiswa = "";
+        const rowBelumHadir = document.getElementById(`belum-hadir-${nis}`);
+
+        if (rowBelumHadir) {
+          const pElements = rowBelumHadir.querySelectorAll('p');
+          // Element pertama biasanya berisi Nama, element kedua berisi Kelas
+          if (pElements.length >= 2) {
+            namaSiswa = pElements[0].innerText;
+            kelasSiswa = pElements[1].innerText;
+          }
+        }
 
         axios.post('{{ route('piket.record') }}', {
             siswa_id: nis,
@@ -301,25 +355,38 @@
             _token: "{{ csrf_token() }}"
           })
           .then(response => {
-            showStatusMessage(response.data.message, 'success');
+            // FORMAT PESAN SUKSES
+            let infoSiswa = kelasSiswa ? `${namaSiswa} (${kelasSiswa})` : namaSiswa;
+            let pesanBackend = response.data.message || 'Berhasil absen!';
 
+            showStatusMessage(`Berhasil: ${infoSiswa}`, 'success');
+
+            // Tampilkan SweetAlert Toast dengan Nama dan Kelas
             Toast.fire({
               icon: 'success',
-              title: response.data.message
+              text: pesanBackend
             });
 
-            axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
+            // OPTIMASI: Update UI langsung secara lokal (Tanpa narik data AJAX server yang berat)
+            updateDashboardLocally(nis);
           })
           .catch(error => {
             let msg = error.response ? error.response.data.message : 'Terjadi kesalahan sistem';
             showStatusMessage(msg, 'error');
-
             Toast.fire({
               icon: 'error',
               title: msg
             });
           })
           .finally(() => {
+            // OPTIMASI JEDA: Kurangi jeda kamera jadi sangat cepat (300ms) agar siswa tidak antri
+            if (activeMode === 'camera' && html5QrCode) {
+              setTimeout(() => {
+                isScanning = true;
+                html5QrCode.resume();
+              }, 300);
+            }
+
             if (activeMode === 'scanner') {
               const input = document.getElementById('scanner_input');
               if (input) {
@@ -327,15 +394,38 @@
                 input.focus();
               }
             }
-
-            if (activeMode === 'camera' && html5QrCode) {
-              setTimeout(() => {
-                isScanning = true;
-                html5QrCode.resume();
-              }, 2000);
-            }
           });
       }
+
+      // --- FUNGSI UPDATE UI LOKAL (SUPER CEPAT) ---
+      function updateDashboardLocally(nis) {
+        // Hapus siswa dari list "Belum Hadir"
+        const rowBelumHadir = document.getElementById(`belum-hadir-${nis}`);
+        if (rowBelumHadir) {
+          rowBelumHadir.remove();
+
+          // Ubah angka statistik secara instan
+          let statHadir = document.getElementById('statistik-hadir');
+          let statBelum = document.getElementById('statistik-belum-hadir');
+
+          statHadir.innerText = parseInt(statHadir.innerText) + 1;
+          let sisa = parseInt(statBelum.innerText) - 1;
+          statBelum.innerText = sisa < 0 ? 0 : sisa;
+        }
+
+        // Perbarui angka di judul "Daftar Siswa Belum Hadir"
+        const judulBelumHadir = document.getElementById('judul-belum-hadir');
+        if (judulBelumHadir && judulBelumHadir.innerText.includes('(')) {
+          let sisa = document.getElementById('statistik-belum-hadir').innerText;
+          judulBelumHadir.innerText = `Daftar Siswa Belum Hadir (${sisa})`;
+        }
+      }
+
+      // --- SINKRONISASI LATAR BELAKANG ---
+      // Minta server data baru tiap 30 detik agar PC tidak lag, tapi dasbor tetap tersinkronisasi
+      setInterval(() => {
+        axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
+      }, 30000);
 
       // --- 6. EVENT LISTENER SCANNER GUN ---
       const scannerInput = document.getElementById('scanner_input');
@@ -345,18 +435,14 @@
             e.preventDefault();
             const nis = this.value.trim();
             if (nis.length > 0) {
-              this.value = ''; // Kosongkan instan
+              this.value = '';
               validateAndSubmit(nis);
             }
           }
         });
 
-        document.getElementById('mode-scanner-container').addEventListener('click', function() {
-          scannerInput.focus();
-        });
-
-        // Auto-focus jika klik di luar
-        document.addEventListener('click', function(e) {
+        document.getElementById('mode-scanner-container').addEventListener('click', () => scannerInput.focus());
+        document.addEventListener('click', (e) => {
           if (activeMode === 'scanner' && e.target.id !== 'scanner_input' && !e.target.closest('button')) {
             scannerInput.focus();
           }
@@ -380,22 +466,16 @@
           btnCamera.classList.remove(...inactiveClass);
           btnScanner.classList.remove(...activeClass);
           btnScanner.classList.add(...inactiveClass);
-
           scannerContainer.classList.add('hidden');
           overlayText.textContent = "Arahkan QR ke Kamera";
-
         } else {
           btnScanner.classList.add(...activeClass);
           btnScanner.classList.remove(...inactiveClass);
           btnCamera.classList.remove(...activeClass);
           btnCamera.classList.add(...inactiveClass);
-
           scannerContainer.classList.remove('hidden');
           overlayText.textContent = "Kamera Aktif (Preview)";
-
-          setTimeout(() => {
-            scannerInput.focus();
-          }, 200);
+          setTimeout(() => scannerInput.focus(), 200);
         }
       }
 
@@ -403,31 +483,26 @@
         if (!isScanning || activeMode === 'scanner') return;
         isScanning = false;
         html5QrCode.pause();
-        let photo = capturePhoto();
-        processAbsensi(decodedText, photo);
+        validateAndSubmit(decodedText);
       }
 
       function startCamera() {
         if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
         const config = {
-          fps: 10,
+          fps: 15,
           qrbox: {
-            width: 200,
-            height: 200
+            width: 250,
+            height: 250
           },
           aspectRatio: 1.0
         };
         Html5Qrcode.getCameras().then(devices => {
           if (devices && devices.length) {
-            html5QrCode.start(devices[0].id, config, onScanSuccess).catch(err => {
-              console.log("Error start:", err);
-            });
+            html5QrCode.start(devices[0].id, config, onScanSuccess).catch(err => console.log(err));
           } else {
             showStatusMessage("Kamera tidak ditemukan.", "error");
           }
-        }).catch(err => {
-          console.log("Error cam:", err);
-        });
+        }).catch(err => console.log(err));
       }
 
       function showStatusMessage(message, type = 'success') {
@@ -436,19 +511,25 @@
           'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700');
         scanStatusContainer.innerHTML =
           `<div class="p-3 rounded-lg ${color} text-sm font-medium text-center">${message}</div>`;
-        statusTimeout = setTimeout(() => {
-          scanStatusContainer.innerHTML = '';
-        }, 4000);
+        statusTimeout = setTimeout(() => scanStatusContainer.innerHTML = '', 3000);
       }
 
       document.addEventListener('DOMContentLoaded', () => {
         loadFaceModels();
         startCamera();
+        switchMode('scanner');
       });
 
+      // Render Dashboard (Dipanggil saat sinkronisasi 30 detik atau klik tombol hadir manual)
       function renderDashboard(data) {
         document.getElementById('statistik-hadir').textContent = data.jumlahHadir;
         document.getElementById('statistik-belum-hadir').textContent = data.jumlahBelumHadir;
+
+        const judulBelumHadir = document.getElementById('judul-belum-hadir');
+        if (judulBelumHadir) {
+          judulBelumHadir.innerText = `Daftar Siswa Belum Hadir (${data.siswaBelumHadir.length})`;
+        }
+
         let aktivitasHtml = '';
         if (data.aktivitasTerbaru.length > 0) {
           data.aktivitasTerbaru.forEach(absensi => {
@@ -469,6 +550,7 @@
           aktivitasHtml = `<p class="text-sm text-gray-500">Belum ada aktivitas.</p>`;
         }
         document.getElementById('aktivitas-terbaru').innerHTML = aktivitasHtml;
+
         let belumHadirHtml = '';
         if (data.siswaBelumHadir.length > 0) {
           data.siswaBelumHadir.forEach(siswa => {
@@ -516,6 +598,7 @@
         });
       }
 
+      // --- LOGIKA TAB JADWAL PELAJARAN ---
       const tabButtons = document.querySelectorAll('.tab-button');
       const tabContents = document.querySelectorAll('.tab-content');
       const searchInputTab = document.getElementById('jadwal-search-input');

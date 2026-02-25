@@ -115,7 +115,7 @@ class GuruPiketController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Selamat Datang, ' . $siswa->nama_siswa . '! (Masuk)'
+                'message' => 'Selamat Datang, ' . $siswa->nama_siswa . '!'
             ]);
         }
 
@@ -134,8 +134,8 @@ class GuruPiketController extends Controller
 
             // Jika selisih kurang dari 60 detik (1 menit), tolak.
             // Sekarang logika: 1933 < 60 adalah FALSE -> Lanjut Absen Pulang (Benar)
-            if ($selisihDetik < 60) {
-                $sisaDetik = 60 - intval($selisihDetik);
+            if ($selisihDetik < 7200) {
+                $sisaDetik = 7200 - intval($selisihDetik);
                 return response()->json([
                     'message' => "Baru saja absen masuk. Tunggu {$sisaDetik} detik lagi untuk pulang."
                 ], 422);
@@ -156,7 +156,7 @@ class GuruPiketController extends Controller
                 ]);
 
             return response()->json([
-                'message' => 'Hati-hati di jalan, ' . $siswa->nama_siswa . '! (Pulang)'
+                'message' => 'Hati-hati di jalan, ' . $siswa->nama_siswa . '!'
             ]);
         }
 
