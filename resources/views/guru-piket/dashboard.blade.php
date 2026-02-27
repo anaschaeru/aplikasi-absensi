@@ -353,6 +353,10 @@
             siswa_id: nis,
             image: imageBase64,
             _token: "{{ csrf_token() }}"
+          }, {
+            headers: {
+              'X-Scanner-Secret': 'absen-smkn4tng-aman'
+            }
           })
           .then(response => {
             // FORMAT PESAN SUKSES
@@ -581,6 +585,10 @@
             axios.post('{{ route('piket.hadirkan.manual') }}', {
                 siswa_id: siswaId,
                 _token: "{{ csrf_token() }}"
+              }, {
+                headers: {
+                  'X-Scanner-Secret': 'absen-smkn4tng-aman'
+                }
               })
               .then(response => {
                 showStatusMessage(response.data.message, 'success');

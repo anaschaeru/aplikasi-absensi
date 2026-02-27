@@ -23,55 +23,8 @@
                 <th class="no-export">Aksi</th>
               </tr>
             </thead>
+            {{-- Tbody dikosongkan karena akan diisi oleh DataTables Server-Side --}}
             <tbody>
-              @php
-                $roles = ['admin', 'guru', 'guru_piket', 'siswa', 'walikelas'];
-              @endphp
-              @foreach ($users as $user)
-                <tr>
-                  <td>{{ $loop->iteration }}</td>
-                  <td>{{ $user->name }}</td>
-                  <td>{{ $user->email }}</td>
-                  <td>
-                    {{-- FORM UNTUK MENGUBAH ROLE --}}
-                    <form action="{{ route('admin.users.updateRole', $user->id) }}" method="POST"
-                      class="flex items-center gap-2">
-                      @csrf
-                      @method('PATCH')
-                      <select name="role"
-                        class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                        @foreach ($roles as $role)
-                          <option value="{{ $role }}" @if ($user->role == $role) selected @endif>
-                            {{ ucfirst(str_replace('_', ' ', $role)) }}
-                          </option>
-                        @endforeach
-                      </select>
-                      <button type="submit"
-                        class="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-                        title="Simpan Perubahan Role">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                          <path
-                            d="M9.25 13.5a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.864z" />
-                          <path
-                            d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
-                        </svg>
-                      </button>
-                    </form>
-                  </td>
-                  <td>
-                    {{-- FORM UNTUK RESET PASSWORD --}}
-                    <form id="reset-form-{{ $user->id }}" action="{{ route('admin.users.resetPassword', $user->id) }}"
-                      method="POST">
-                      @csrf
-                      <button type="button"
-                        class="inline-flex items-center px-3 py-2 bg-yellow-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-600 transition"
-                        onclick="confirmReset({{ $user->id }}, '{{ $user->name }}')">
-                        Reset Pass
-                      </button>
-                    </form>
-                  </td>
-                </tr>
-              @endforeach
             </tbody>
           </table>
         </div>
@@ -94,6 +47,7 @@
       });
     </script>
   @endif
+
   <script>
     function confirmReset(id, name) {
       Swal.fire({
@@ -113,10 +67,40 @@
     }
   </script>
 
-  {{-- Inisialisasi DataTables --}}
+  {{-- Inisialisasi DataTables Server-Side --}}
   <script>
     $(document).ready(function() {
       new DataTable('#usersTable', {
+        processing: true,
+        serverSide: true, // Wajib bernilai true untuk Server-Side Processing
+        ajax: "{{ route('admin.users.index') }}", // Rute mengambil data
+        columns: [{
+            data: 'DT_RowIndex',
+            name: 'DT_RowIndex',
+            orderable: false,
+            searchable: false
+          }, // Nomor urut otomatis
+          {
+            data: 'name',
+            name: 'name'
+          },
+          {
+            data: 'email',
+            name: 'email'
+          },
+          {
+            data: 'role_form',
+            name: 'role',
+            orderable: false,
+            searchable: false
+          }, // Kolom ubah role
+          {
+            data: 'action',
+            name: 'action',
+            orderable: false,
+            searchable: false
+          } // Kolom tombol aksi
+        ],
         responsive: true,
         language: {
           "emptyTable": "Tidak ada data yang tersedia pada tabel ini",
@@ -126,7 +110,7 @@
           "infoThousands": "'",
           "lengthMenu": "Tampilkan _MENU_ entri",
           "loadingRecords": "Sedang memuat...",
-          "processing": "Sedang memproses...",
+          "processing": "Sedang mengambil data...", // Teks loading saat ganti halaman/cari data
           "search": "Cari:",
           "zeroRecords": "Tidak ditemukan data yang sesuai",
           "thousands": "'",
