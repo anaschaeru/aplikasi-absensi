@@ -1,677 +1,656 @@
 @extends('layouts.master')
 
-@section('header')
-  <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+{{-- @section('header')
+  <h2 class="font-bold text-2xl text-gray-800 leading-tight tracking-tight">
     Dasbor Guru Piket
   </h2>
-@endsection
+@endsection --}}
+
 
 @section('content')
-  <div class="py-12">
+  <div class="py-5 bg-gray-50 min-h-screen">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-      {{-- Statistik Hari Ini --}}
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-          <h3 class="text-sm font-medium text-gray-500">Total Siswa</h3>
-          <p class="mt-1 text-3xl font-semibold text-gray-900">{{ $totalSiswa }}</p>
+      {{-- STATISTIK HARI INI --}}
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {{-- Card Total --}}
+        <div
+          class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex justify-between items-center">
+          <div>
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Siswa</h3>
+            <p class="mt-1 text-4xl font-extrabold text-gray-800">{{ $totalSiswa }}</p>
+          </div>
+          <div class="p-3 bg-blue-50 rounded-lg text-blue-500">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+              </path>
+            </svg>
+          </div>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-          <h3 class="text-sm font-medium text-gray-500">Sudah Hadir</h3>
-          <p id="statistik-hadir" class="mt-1 text-3xl font-semibold text-green-600">{{ $jumlahHadir }}</p>
+        {{-- Card Hadir --}}
+        <div
+          class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex justify-between items-center">
+          <div>
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Sudah Hadir</h3>
+            <p id="statistik-hadir" class="mt-1 text-4xl font-extrabold text-emerald-500">{{ $jumlahHadir }}</p>
+          </div>
+          <div class="p-3 bg-emerald-50 rounded-lg text-emerald-500">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-          <h3 class="text-sm font-medium text-gray-500">Belum Hadir</h3>
-          <p id="statistik-belum-hadir" class="mt-1 text-3xl font-semibold text-red-600">{{ $jumlahBelumHadir }}
-          </p>
+        {{-- Card Belum Hadir --}}
+        <div
+          class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex justify-between items-center">
+          <div>
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Belum Hadir</h3>
+            <p id="statistik-belum-hadir" class="mt-1 text-4xl font-extrabold text-rose-500">{{ $jumlahBelumHadir }}</p>
+          </div>
+          <div class="p-3 bg-rose-50 rounded-lg text-rose-500">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
         </div>
       </div>
 
-      {{-- Grid Utama 3 Kolom --}}
+      {{-- GRID UTAMA 3 KOLOM --}}
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {{-- Kolom 1: Daftar Siswa Belum Hadir --}}
-        <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-          <h3 id="judul-belum-hadir" class="font-bold text-lg mb-4">Daftar Siswa Belum Hadir
-            ({{ $siswaBelumHadir->count() }})</h3>
-          <div id="daftar-belum-hadir" class="overflow-y-auto h-96 space-y-2 pr-2">
+        <div class="lg:col-span-1 bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col h-[38rem]">
+          <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+            <h3 id="judul-belum-hadir" class="font-bold text-gray-800 text-lg">Belum Hadir</h3>
+            <span
+              class="bg-rose-100 text-rose-600 py-1 px-3 rounded-full text-xs font-bold">{{ $siswaBelumHadir->count() }}
+              Siswa</span>
+          </div>
+          <div id="daftar-belum-hadir" class="overflow-y-auto custom-scrollbar flex-1 space-y-2 pr-2">
             @include('guru-piket._siswa_belum_hadir', ['siswaBelumHadir' => $siswaBelumHadir])
           </div>
         </div>
 
         {{-- Kolom 2: Area Absensi (Scanner & Kamera) --}}
-        <div class="lg:col-span-1 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-          <div class="p-6">
-            <h3 class="font-bold text-lg mb-4 text-center">Absensi Siswa</h3>
+        <div
+          class="lg:col-span-1 bg-white rounded-xl shadow-md border-t-4 border-indigo-500 flex flex-col h-[38rem] relative overflow-hidden">
+          <div class="p-4 flex-1 flex flex-col">
+            <h3 class="font-extrabold text-xl mb-2 text-center text-gray-800 tracking-tight">Panel Absensi</h3>
 
-            {{-- TAB SWITCHER --}}
-            <div class="flex justify-center mb-4 bg-gray-100 p-1 rounded-lg">
-              <button onclick="switchMode('camera')" id="btn-mode-camera"
-                class="w-1/2 py-2 px-4 rounded-md text-sm font-medium transition-all bg-white text-indigo-600 shadow-sm">
-                Kamera
-              </button>
-              <button onclick="switchMode('scanner')" id="btn-mode-scanner"
-                class="w-1/2 py-2 px-4 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition-all">
-                Alat Scanner
-              </button>
-            </div>
-
-            {{-- INPUT ALAT SCANNER (Hanya muncul di Mode Scanner) --}}
-            <div id="mode-scanner-container" class="hidden mb-4">
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {{-- INPUT ALAT SCANNER (Tidak lagi flex-1 agar tingginya pas) --}}
+            <div id="mode-scanner-container" class="hidden flex-col flex-none mb-2">
+              <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg class="h-6 w-6 text-indigo-400 group-focus-within:text-indigo-600 transition-colors" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z">
                     </path>
                   </svg>
                 </div>
-                {{-- Input ini menerima tembakan scanner --}}
                 <input type="text" id="scanner_input"
-                  class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
-                  placeholder="Klik disini & Scan..." autocomplete="off">
+                  class="w-full pl-12 pr-4 py-2 bg-gray-50 border-2 border-gray-200 rounded-xl shadow-sm focus:bg-white focus:ring-0 focus:border-indigo-500 text-base font-mono tracking-widest transition-all"
+                  placeholder="Klik & Scan Barcode..." autocomplete="off">
               </div>
-              <p class="text-[10px] text-gray-500 mt-1 text-center">Scan otomatis submit & ambil foto.</p>
             </div>
 
-            {{-- PREVIEW KAMERA (Selalu Muncul di Kedua Mode) --}}
-            <div id="mode-camera-container" class="transition-all duration-300">
-              <div class="max-w-xs mx-auto relative group">
-                {{-- Video Element --}}
-                <div id="reader"
-                  class="w-full aspect-square bg-black rounded-lg overflow-hidden border-2 border-gray-200"></div>
+            {{-- PREVIEW KAMERA (Selalu Tampil, tapi teks berubah) --}}
+            <div id="mode-camera-container"
+              class="transition-all duration-300 flex-1 flex items-center justify-center mb-2 mt-2">
+              {{-- UBAH DISINI: Mengganti max-w-[15rem] menjadi max-w-[20rem] atau max-w-sm --}}
+              <div class="w-full max-w-[22rem] mx-auto relative group">
+                {{-- Video Element dengan Frame Modern --}}
+                <div class="p-1.5 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl shadow-lg">
+                  {{-- Frame kamera tetap persegi (aspect-square) --}}
+                  <div id="reader" class="w-full aspect-square bg-black rounded-xl overflow-hidden"></div>
+                </div>
 
-                {{-- Overlay Text (Berubah sesuai mode) --}}
-                <div class="absolute bottom-2 left-0 right-0 text-center">
+                {{-- Posisi teks disesuaikan agar tidak menabrak bingkai bawah --}}
+                <div class="absolute -bottom-5 left-0 right-0 text-center z-10">
                   <span id="camera-overlay-text"
-                    class="inline-block px-2 py-1 bg-black/50 text-white text-xs rounded-full backdrop-blur-sm">
+                    class="inline-block px-4 py-1.5 bg-gray-900/80 text-white text-xs font-bold rounded-full backdrop-blur-md shadow-sm border border-gray-700/50">
                     Mode Kamera Aktif
                   </span>
                 </div>
               </div>
             </div>
 
-            <div id="scan-status" class="mt-4 h-14"></div>
+            <div id="scan-status" class="h-8 flex items-center justify-center my-2"></div>
+
+            {{-- TAB SWITCHER MODERN (Anchor di bawah) --}}
+            <div class="flex p-1 bg-gray-100 mb-4 rounded-lg shadow-inner mt-auto">
+              <button onclick="switchMode('camera')" id="btn-mode-camera"
+                class="w-1/2 py-2 px-4 rounded-md text-sm font-bold transition-all bg-white text-indigo-600 shadow-sm ring-1 ring-black/5">
+                Kamera
+              </button>
+              <button onclick="switchMode('scanner')" id="btn-mode-scanner"
+                class="w-1/2 py-2 px-4 rounded-md text-sm font-medium text-gray-500 hover:text-gray-800 transition-all">
+                Alat Scanner
+              </button>
+            </div>
+
           </div>
         </div>
 
         {{-- Kolom 3: Aktivitas Terbaru --}}
-        <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-          <h3 class="font-bold text-lg mb-4">Aktivitas Terbaru</h3>
-          <div class="overflow-y-auto h-96">
-            <div id="aktivitas-terbaru" class="space-y-4">
+        <div class="lg:col-span-1 bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col h-[38rem]">
+          <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+            <h3 class="font-bold text-gray-800 text-lg">Aktivitas Terbaru</h3>
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="overflow-y-auto custom-scrollbar flex-1 pr-2">
+            <div id="aktivitas-terbaru" class="space-y-0.5">
               @include('guru-piket._aktivitas_terbaru', [
                   'aktivitasTerbaru' => $aktivitasTerbaru,
               ])
             </div>
           </div>
         </div>
+
       </div>
-
-      {{-- BAGIAN JADWAL --}}
-      {{-- <div class="mt-8 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-        <div class="p-4 sm:p-6">
-          <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-            <h3 class="text-xl font-bold text-gray-800">Jadwal Pelajaran Lengkap</h3>
-            <div class="w-full md:w-80">
-              <input type="text" id="jadwal-search-input"
-                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Cari Kelas, Mapel, Guru...">
-            </div>
-          </div>
-          <div class="border-b border-gray-200">
-            <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
-              @forelse ($jadwals->keys() as $namaKelas)
-                <button
-                  class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm {{ $loop->first ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}"
-                  onclick="changeTab({{ $loop->index }})">{{ $namaKelas }}</button>
-              @empty <p class="text-sm text-gray-500 py-3">Belum ada jadwal.</p>
-              @endforelse
-            </nav>
-          </div>
-          <div class="mt-6">
-            @forelse ($jadwals as $namaKelas => $jadwalPerKelas)
-              <div id="tab-content-{{ $loop->index }}" class="tab-content {{ $loop->first ? '' : 'hidden' }}">
-                <div class="overflow-x-auto">
-                  <table class="min-w-full border-collapse border border-gray-200">
-                    <thead class="bg-gray-50">
-                      <tr class="text-left text-xs font-medium text-gray-500 uppercase">
-                        @foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'] as $hari)
-                          <th class="border border-gray-200 px-4 py-2">{{ $hari }}</th>
-                        @endforeach
-                      </tr>
-                    </thead>
-                    <tbody class="align-top">
-                      <tr>
-                        @foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'] as $hari)
-                          <td class="border border-gray-200 p-2 day-column align-top">
-                            <div class="space-y-2">
-                              @forelse ($jadwalPerKelas->where('hari', $hari) as $jadwal)
-                                <div
-                                  class="bg-indigo-50 rounded-lg p-3 text-sm schedule-item hover:bg-indigo-100 transition">
-                                  <p class="font-bold text-indigo-800">{{ $jadwal->mataPelajaran->nama_mapel ?? 'N/A' }}
-                                  </p>
-                                  <p class="text-gray-600">{{ $jadwal->guru->nama_guru ?? 'N/A' }}</p>
-                                  <p class="text-xs text-gray-500 font-mono mt-1">
-                                    {{ date('H:i', strtotime($jadwal->jam_mulai)) }} -
-                                    {{ date('H:i', strtotime($jadwal->jam_selesai)) }}</p>
-                                </div>
-                              @empty <div class="text-center text-xs text-gray-400 p-4 empty-day-message">-- Kosong --
-                                </div>
-                              @endforelse
-                            </div>
-                          </td>
-                        @endforeach
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              @empty
-              @endforelse
-            </div>
-          </div>
-        </div>
-
-      </div> --}}
     </div>
-  @endsection
+  </div>
+@endsection
 
-  @push('scripts')
-    {{-- Library QR & Axios --}}
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    {{-- Library Deteksi Wajah --}}
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+@push('scripts')
+  {{-- Library QR & Axios --}}
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  {{-- Library Deteksi Wajah --}}
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
-    <style>
-      #reader video {
-        width: 100% !important;
-        height: auto !important;
-        object-fit: cover !important;
-        border-radius: 8px;
+  <style>
+    /* Custom Scrollbar Tipis */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    #reader video {
+      width: 100% !important;
+      height: auto !important;
+      object-fit: cover !important;
+      border-radius: 8px;
+    }
+
+    /* --- TAMBAHAN CSS UNTUK TOAST JUMBO --- */
+    .toast-besar {
+      width: 400px !important;
+      padding: 10px !important;
+      border-radius: 16px !important;
+    }
+
+    .toast-judul-besar {
+      font-size: 18px !important;
+    }
+
+    .toast-pesan-besar {
+      font-size: 26px !important;
+      font-weight: bold !important;
+    }
+  </style>
+
+  <script>
+    const scanStatusContainer = document.getElementById('scan-status');
+    let statusTimeout;
+    let isScanning = true;
+    let html5QrCode;
+    let activeMode = 'camera';
+    let isFaceModelLoaded = false;
+
+    // Konfigurasi Notifikasi Cepat
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      customClass: {
+        popup: 'toast-besar',
+        title: 'toast-judul-besar',
+        htmlContainer: 'toast-pesan-besar'
       }
+    });
 
-      /* --- TAMBAHAN CSS UNTUK TOAST JUMBO --- */
-      .toast-besar {
-        width: 400px !important;
-        /* Lebar popup diperbesar lagi */
-        padding: 10px !important;
-        /* Jarak ruang dalam diperbesar lagi */
-        border-radius: 16px !important;
-      }
+    // --- 1. LOAD MODEL WAJAH ---
+    async function loadFaceModels() {
+      try {
+        showStatusMessage("Sedang mengunduh model AI...", "warning");
+        const inputScanner = document.getElementById('scanner_input');
+        if (inputScanner) inputScanner.disabled = true;
 
-      .toast-judul-besar {
-        font-size: 18px !important;
-        /* Ukuran font judul (Nama/Kelas) SANGAT BESAR */
-        /* line-height: 1.5 !important; */
-      }
+        const modelUrl = "{{ asset('models') }}";
+        await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
 
-      .toast-pesan-besar {
-        font-size: 26px !important;
-        font-weight: bold !important;
-        /* Ukuran font pesan SANGAT BESAR */
-        /* margin-top: px !important; */
-      }
-    </style>
+        isFaceModelLoaded = true;
+        showStatusMessage("Sistem Siap. Silahkan Scan.", "success");
 
-    <script>
-      const scanStatusContainer = document.getElementById('scan-status');
-      let statusTimeout;
-      let isScanning = true;
-      let html5QrCode;
-      let activeMode = 'camera'; // Default mode
-      let isFaceModelLoaded = false;
-
-      // Konfigurasi Notifikasi Cepat (Toast) non-blocking JUMBO
-      const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000, // Waktu saya naikkan sedikit lagi ke 3.5 detik
-        timerProgressBar: true,
-        customClass: {
-          popup: 'toast-besar', // Memanggil CSS ukuran popup jumbo
-          title: 'toast-judul-besar', // Memanggil CSS ukuran font judul jumbo
-          htmlContainer: 'toast-pesan-besar' // Memanggil CSS ukuran font teks/pesan jumbo
+        if (inputScanner) {
+          inputScanner.disabled = false;
+          inputScanner.focus();
         }
+      } catch (error) {
+        showStatusMessage("Gagal memuat AI Wajah.", "error");
+      }
+    }
+
+    // --- 2. DETEKSI WAJAH ---
+    async function checkFaceExist() {
+      if (!isFaceModelLoaded) return false;
+
+      const videoElement = document.querySelector('#reader video');
+      if (!videoElement || videoElement.paused || videoElement.ended) return false;
+
+      const options = new faceapi.TinyFaceDetectorOptions({
+        inputSize: 160,
+        scoreThreshold: 0.4
       });
+      const detections = await faceapi.detectSingleFace(videoElement, options);
+      return !!detections;
+    }
 
-      // --- 1. LOAD MODEL WAJAH ---
-      async function loadFaceModels() {
-        try {
-          showStatusMessage("Sedang mengunduh model AI...", "warning");
-          const inputScanner = document.getElementById('scanner_input');
-          if (inputScanner) inputScanner.disabled = true;
+    // --- 3. CAPTURE FOTO ---
+    function capturePhoto() {
+      let imageBase64 = null;
+      const videoElement = document.querySelector('#reader video');
+      if (videoElement && videoElement.readyState === 4) {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 400;
+        const scale = MAX_WIDTH / videoElement.videoWidth;
+        canvas.width = MAX_WIDTH;
+        canvas.height = videoElement.videoHeight * scale;
 
-          const modelUrl = "{{ asset('models') }}";
-          await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
+        const context = canvas.getContext('2d');
+        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-          isFaceModelLoaded = true;
-          showStatusMessage("Sistem Siap. Silahkan Scan.", "success");
+        imageBase64 = canvas.toDataURL('image/jpeg', 0.6);
+      }
+      return imageBase64;
+    }
 
-          if (inputScanner) {
-            inputScanner.disabled = false;
-            inputScanner.focus();
-          }
-        } catch (error) {
-          showStatusMessage("Gagal memuat AI Wajah.", "error");
-        }
+    // --- 4. LOGIKA UTAMA ---
+    async function validateAndSubmit(nis) {
+      scanStatusContainer.innerHTML =
+        `<div class="p-2 rounded-lg bg-blue-100 text-blue-700 text-sm font-bold text-center w-full">Memproses...</div>`;
+
+      let hasFace = true;
+      if (activeMode === 'scanner') {
+        hasFace = await checkFaceExist();
       }
 
-      // --- 2. DETEKSI WAJAH (DIPERCEPAT) ---
-      async function checkFaceExist() {
-        if (!isFaceModelLoaded) return false;
+      const input = document.getElementById('scanner_input');
 
-        const videoElement = document.querySelector('#reader video');
-        if (!videoElement || videoElement.paused || videoElement.ended) return false;
-
-        // OPTIMASI: inputSize dikecilkan agar proses CPU 3x lipat lebih cepat
-        const options = new faceapi.TinyFaceDetectorOptions({
-          inputSize: 160,
-          scoreThreshold: 0.4
+      if (!hasFace) {
+        showStatusMessage('Wajah tidak terdeteksi!', 'error');
+        Toast.fire({
+          icon: 'warning',
+          title: 'Wajah tidak terdeteksi!'
         });
-        const detections = await faceapi.detectSingleFace(videoElement, options);
-        return !!detections;
-      }
 
-      // --- 3. CAPTURE FOTO (DIKOMPRESI) ---
-      function capturePhoto() {
-        let imageBase64 = null;
-        const videoElement = document.querySelector('#reader video');
-        if (videoElement && videoElement.readyState === 4) {
-          const canvas = document.createElement('canvas');
-
-          // OPTIMASI: Compress gambar agar pengiriman jaringan sangat cepat
-          const MAX_WIDTH = 400;
-          const scale = MAX_WIDTH / videoElement.videoWidth;
-          canvas.width = MAX_WIDTH;
-          canvas.height = videoElement.videoHeight * scale;
-
-          const context = canvas.getContext('2d');
-          context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-          // Kompres kualitas jpeg ke 60%
-          imageBase64 = canvas.toDataURL('image/jpeg', 0.6);
+        if (input) {
+          input.value = '';
+          input.focus();
         }
-        return imageBase64;
+        return;
       }
 
-      // --- 4. LOGIKA UTAMA ---
-      async function validateAndSubmit(nis) {
-        // Tampilkan indikator instan
-        scanStatusContainer.innerHTML =
-          `<div class="p-3 rounded-lg bg-blue-100 text-blue-700 text-sm font-bold text-center">Memproses...</div>`;
+      let photo = capturePhoto();
+      processAbsensi(nis, photo);
+    }
 
-        const hasFace = await checkFaceExist();
-        const input = document.getElementById('scanner_input');
+    // --- 5. PROSES KIRIM DATA ---
+    function processAbsensi(nis, imageBase64 = null) {
+      if (!nis || nis.trim() === "") return;
 
-        if (!hasFace) {
-          showStatusMessage('Wajah tidak terdeteksi!', 'error');
+      let namaSiswa = nis;
+      let kelasSiswa = "";
+      const rowBelumHadir = document.getElementById(`belum-hadir-${nis}`);
+
+      if (rowBelumHadir) {
+        const pElements = rowBelumHadir.querySelectorAll('p');
+        if (pElements.length >= 2) {
+          namaSiswa = pElements[0].innerText;
+          kelasSiswa = pElements[1].innerText;
+        }
+      }
+
+      axios.post('{{ route('piket.record') }}', {
+          siswa_id: nis,
+          image: imageBase64,
+          _token: "{{ csrf_token() }}"
+        }, {
+          headers: {
+            'X-Scanner-Secret': 'absen-smkn4tng-aman'
+          }
+        })
+        .then(response => {
+          let infoSiswa = kelasSiswa ? `${namaSiswa} (${kelasSiswa})` : namaSiswa;
+          let pesanBackend = response.data.message || 'Berhasil absen!';
+
+          showStatusMessage(`Berhasil: ${infoSiswa}`, 'success');
+
           Toast.fire({
-            icon: 'warning',
-            title: 'Wajah tidak terdeteksi!'
+            icon: 'success',
+            text: pesanBackend
           });
-          if (input) {
-            input.value = '';
-            input.focus();
+
+          updateDashboardLocally(nis);
+        })
+        .catch(error => {
+          let msg = 'Terjadi kesalahan sistem';
+
+          if (error.response) {
+            if (error.response.status === 422 && error.response.data.errors) {
+              const validationErrors = error.response.data.errors;
+              msg = Object.values(validationErrors)[0][0];
+            } else {
+              msg = error.response.data.message || msg;
+            }
           }
 
-          // Jika gagal, langsung aktifkan scanner lagi
+          showStatusMessage(msg, 'error');
+          Toast.fire({
+            icon: 'error',
+            title: msg
+          });
+        })
+        .finally(() => {
           if (activeMode === 'camera' && html5QrCode) {
             setTimeout(() => {
               isScanning = true;
               html5QrCode.resume();
-            }, 500);
+            }, 300);
           }
-          return;
-        }
 
-        let photo = capturePhoto();
-        processAbsensi(nis, photo);
-      }
-
-      // --- 5. PROSES KIRIM DATA (TANPA RELOAD DASHBOARD BERAT) ---
-      function processAbsensi(nis, imageBase64 = null) {
-        if (!nis || nis.trim() === "") return;
-
-        // AMBIL DATA NAMA DAN KELAS DARI DOM (Sebelum Dihapus)
-        let namaSiswa = nis;
-        let kelasSiswa = "";
-        const rowBelumHadir = document.getElementById(`belum-hadir-${nis}`);
-
-        if (rowBelumHadir) {
-          const pElements = rowBelumHadir.querySelectorAll('p');
-          // Element pertama biasanya berisi Nama, element kedua berisi Kelas
-          if (pElements.length >= 2) {
-            namaSiswa = pElements[0].innerText;
-            kelasSiswa = pElements[1].innerText;
-          }
-        }
-
-        axios.post('{{ route('piket.record') }}', {
-            siswa_id: nis,
-            image: imageBase64,
-            _token: "{{ csrf_token() }}"
-          }, {
-            headers: {
-              'X-Scanner-Secret': 'absen-smkn4tng-aman'
-            }
-          })
-          .then(response => {
-            // FORMAT PESAN SUKSES
-            let infoSiswa = kelasSiswa ? `${namaSiswa} (${kelasSiswa})` : namaSiswa;
-            let pesanBackend = response.data.message || 'Berhasil absen!';
-
-            showStatusMessage(`Berhasil: ${infoSiswa}`, 'success');
-
-            // Tampilkan SweetAlert Toast dengan Nama dan Kelas
-            Toast.fire({
-              icon: 'success',
-              text: pesanBackend
-            });
-
-            // OPTIMASI: Update UI langsung secara lokal (Tanpa narik data AJAX server yang berat)
-            updateDashboardLocally(nis);
-          })
-          .catch(error => {
-            let msg = error.response ? error.response.data.message : 'Terjadi kesalahan sistem';
-            showStatusMessage(msg, 'error');
-            Toast.fire({
-              icon: 'error',
-              title: msg
-            });
-          })
-          .finally(() => {
-            // OPTIMASI JEDA: Kurangi jeda kamera jadi sangat cepat (300ms) agar siswa tidak antri
-            if (activeMode === 'camera' && html5QrCode) {
-              setTimeout(() => {
-                isScanning = true;
-                html5QrCode.resume();
-              }, 300);
-            }
-
-            if (activeMode === 'scanner') {
-              const input = document.getElementById('scanner_input');
-              if (input) {
-                input.value = '';
-                input.focus();
-              }
-            }
-          });
-      }
-
-      // --- FUNGSI UPDATE UI LOKAL (SUPER CEPAT) ---
-      function updateDashboardLocally(nis) {
-        // Hapus siswa dari list "Belum Hadir"
-        const rowBelumHadir = document.getElementById(`belum-hadir-${nis}`);
-        if (rowBelumHadir) {
-          rowBelumHadir.remove();
-
-          // Ubah angka statistik secara instan
-          let statHadir = document.getElementById('statistik-hadir');
-          let statBelum = document.getElementById('statistik-belum-hadir');
-
-          statHadir.innerText = parseInt(statHadir.innerText) + 1;
-          let sisa = parseInt(statBelum.innerText) - 1;
-          statBelum.innerText = sisa < 0 ? 0 : sisa;
-        }
-
-        // Perbarui angka di judul "Daftar Siswa Belum Hadir"
-        const judulBelumHadir = document.getElementById('judul-belum-hadir');
-        if (judulBelumHadir && judulBelumHadir.innerText.includes('(')) {
-          let sisa = document.getElementById('statistik-belum-hadir').innerText;
-          judulBelumHadir.innerText = `Daftar Siswa Belum Hadir (${sisa})`;
-        }
-      }
-
-      // --- SINKRONISASI LATAR BELAKANG ---
-      // Minta server data baru tiap 30 detik agar PC tidak lag, tapi dasbor tetap tersinkronisasi
-      setInterval(() => {
-        axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
-      }, 30000);
-
-      // --- 6. EVENT LISTENER SCANNER GUN ---
-      const scannerInput = document.getElementById('scanner_input');
-      if (scannerInput) {
-        scannerInput.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            const nis = this.value.trim();
-            if (nis.length > 0) {
-              this.value = '';
-              validateAndSubmit(nis);
+          if (activeMode === 'scanner') {
+            const input = document.getElementById('scanner_input');
+            if (input) {
+              input.value = '';
+              input.focus();
             }
           }
         });
+    }
 
-        document.getElementById('mode-scanner-container').addEventListener('click', () => scannerInput.focus());
-        document.addEventListener('click', (e) => {
-          if (activeMode === 'scanner' && e.target.id !== 'scanner_input' && !e.target.closest('button')) {
-            scannerInput.focus();
-          }
-        });
+    // --- FUNGSI UPDATE UI LOKAL ---
+    function updateDashboardLocally(nis) {
+      const rowBelumHadir = document.getElementById(`belum-hadir-${nis}`);
+      if (rowBelumHadir) {
+        rowBelumHadir.remove();
+
+        let statHadir = document.getElementById('statistik-hadir');
+        let statBelum = document.getElementById('statistik-belum-hadir');
+
+        statHadir.innerText = parseInt(statHadir.innerText) + 1;
+        let sisa = parseInt(statBelum.innerText) - 1;
+        statBelum.innerText = sisa < 0 ? 0 : sisa;
       }
+    }
 
-      // --- 7. FUNGSI BAWAAN LAINNYA ---
-      function switchMode(mode) {
-        activeMode = mode;
-        const btnCamera = document.getElementById('btn-mode-camera');
-        const btnScanner = document.getElementById('btn-mode-scanner');
-        const scannerContainer = document.getElementById('mode-scanner-container');
-        const scannerInput = document.getElementById('scanner_input');
-        const overlayText = document.getElementById('camera-overlay-text');
+    // --- SINKRONISASI LATAR BELAKANG ---
+    setInterval(() => {
+      axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
+    }, 30000);
 
-        const activeClass = ['bg-white', 'text-indigo-600', 'shadow-sm'];
-        const inactiveClass = ['text-gray-500', 'hover:text-gray-700'];
-
-        if (mode === 'camera') {
-          btnCamera.classList.add(...activeClass);
-          btnCamera.classList.remove(...inactiveClass);
-          btnScanner.classList.remove(...activeClass);
-          btnScanner.classList.add(...inactiveClass);
-          scannerContainer.classList.add('hidden');
-          overlayText.textContent = "Arahkan QR ke Kamera";
-        } else {
-          btnScanner.classList.add(...activeClass);
-          btnScanner.classList.remove(...inactiveClass);
-          btnCamera.classList.remove(...activeClass);
-          btnCamera.classList.add(...inactiveClass);
-          scannerContainer.classList.remove('hidden');
-          overlayText.textContent = "Kamera Aktif (Preview)";
-          setTimeout(() => scannerInput.focus(), 200);
+    // --- 6. EVENT LISTENER SCANNER GUN ---
+    const scannerInput = document.getElementById('scanner_input');
+    if (scannerInput) {
+      scannerInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const nis = this.value.trim();
+          if (nis.length > 0) {
+            this.value = '';
+            validateAndSubmit(nis);
+          }
         }
-      }
-
-      function onScanSuccess(decodedText, decodedResult) {
-        if (!isScanning || activeMode === 'scanner') return;
-        isScanning = false;
-        html5QrCode.pause();
-        validateAndSubmit(decodedText);
-      }
-
-      function startCamera() {
-        if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
-        const config = {
-          fps: 15,
-          qrbox: {
-            width: 250,
-            height: 250
-          },
-          aspectRatio: 1.0
-        };
-        Html5Qrcode.getCameras().then(devices => {
-          if (devices && devices.length) {
-            html5QrCode.start(devices[0].id, config, onScanSuccess).catch(err => console.log(err));
-          } else {
-            showStatusMessage("Kamera tidak ditemukan.", "error");
-          }
-        }).catch(err => console.log(err));
-      }
-
-      function showStatusMessage(message, type = 'success') {
-        clearTimeout(statusTimeout);
-        let color = type === 'success' ? 'bg-green-100 text-green-700' : (type === 'warning' ?
-          'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700');
-        scanStatusContainer.innerHTML =
-          `<div class="p-3 rounded-lg ${color} text-sm font-medium text-center">${message}</div>`;
-        statusTimeout = setTimeout(() => scanStatusContainer.innerHTML = '', 3000);
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        loadFaceModels();
-        startCamera();
-        switchMode('scanner');
       });
 
-      // Render Dashboard (Dipanggil saat sinkronisasi 30 detik atau klik tombol hadir manual)
-      function renderDashboard(data) {
-        document.getElementById('statistik-hadir').textContent = data.jumlahHadir;
-        document.getElementById('statistik-belum-hadir').textContent = data.jumlahBelumHadir;
-
-        const judulBelumHadir = document.getElementById('judul-belum-hadir');
-        if (judulBelumHadir) {
-          judulBelumHadir.innerText = `Daftar Siswa Belum Hadir (${data.siswaBelumHadir.length})`;
+      document.getElementById('mode-scanner-container').addEventListener('click', () => scannerInput.focus());
+      document.addEventListener('click', (e) => {
+        if (activeMode === 'scanner' && e.target.id !== 'scanner_input' && !e.target.closest('button')) {
+          scannerInput.focus();
         }
+      });
+    }
 
-        let aktivitasHtml = '';
-        if (data.aktivitasTerbaru.length > 0) {
-          data.aktivitasTerbaru.forEach(absensi => {
-            const waktu = new Date(`1970-01-01T${absensi.waktu_masuk}`).toLocaleTimeString('id-ID', {
+    // --- 7. FUNGSI BAWAAN LAINNYA ---
+    function switchMode(mode) {
+      activeMode = mode;
+      const btnCamera = document.getElementById('btn-mode-camera');
+      const btnScanner = document.getElementById('btn-mode-scanner');
+      const scannerContainer = document.getElementById('mode-scanner-container');
+      const cameraContainer = document.getElementById('mode-camera-container');
+      const scannerInput = document.getElementById('scanner_input');
+      const overlayText = document.getElementById('camera-overlay-text');
+
+      const activeClass = ['bg-white', 'text-indigo-600', 'shadow-sm'];
+      const inactiveClass = ['text-gray-500', 'hover:text-gray-700'];
+
+      // KAMERA TETAP TAMPIL DI KEDUA MODE, hanya merubah status tampilan Input dan Teks
+      if (mode === 'camera') {
+        btnCamera.classList.add(...activeClass);
+        btnCamera.classList.remove(...inactiveClass);
+        btnScanner.classList.remove(...activeClass);
+        btnScanner.classList.add(...inactiveClass);
+
+        scannerContainer.classList.remove('flex');
+        scannerContainer.classList.add('hidden');
+
+        overlayText.textContent = "Arahkan QR ke Kamera";
+        overlayText.className =
+          "inline-block px-3 py-1.5 bg-gray-900/80 text-white text-xs font-medium rounded-full backdrop-blur-md shadow-sm border border-gray-700/50";
+      } else {
+        btnScanner.classList.add(...activeClass);
+        btnScanner.classList.remove(...inactiveClass);
+        btnCamera.classList.remove(...activeClass);
+        btnCamera.classList.add(...inactiveClass);
+
+        scannerContainer.classList.remove('hidden');
+        scannerContainer.classList.add('flex');
+
+        overlayText.textContent = "Deteksi Wajah Aktif";
+        overlayText.className =
+          "inline-block px-3 py-1.5 bg-indigo-600/90 text-white text-xs font-medium rounded-full backdrop-blur-md shadow-sm border border-indigo-400";
+        setTimeout(() => scannerInput.focus(), 200);
+      }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+      if (!isScanning || activeMode === 'scanner') return;
+      isScanning = false;
+      html5QrCode.pause();
+      validateAndSubmit(decodedText);
+    }
+
+    function startCamera() {
+      if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+      const config = {
+        fps: 15,
+        qrbox: {
+          width: 250,
+          height: 250
+        },
+        aspectRatio: 1.0
+      };
+      Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+          html5QrCode.start(devices[0].id, config, onScanSuccess).catch(err => console.log(err));
+        } else {
+          showStatusMessage("Kamera tidak ditemukan.", "error");
+        }
+      }).catch(err => console.log(err));
+    }
+
+    function showStatusMessage(message, type = 'success') {
+      clearTimeout(statusTimeout);
+      let color = type === 'success' ? 'bg-green-100 text-green-700' : (type === 'warning' ?
+        'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700');
+      scanStatusContainer.innerHTML =
+        `<div class="p-2 w-full rounded-lg ${color} text-sm font-medium text-center truncate">${message}</div>`;
+      statusTimeout = setTimeout(() => scanStatusContainer.innerHTML = '', 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFaceModels();
+      startCamera();
+      switchMode('scanner');
+    });
+
+    // Render Dashboard (Sinkronisasi Latar Belakang)
+    function renderDashboard(data) {
+      // 1. Update Statistik Angka
+      document.getElementById('statistik-hadir').textContent = data.jumlahHadir;
+      document.getElementById('statistik-belum-hadir').textContent = data.jumlahBelumHadir;
+
+      const judulBelumHadir = document.getElementById('judul-belum-hadir');
+      if (judulBelumHadir) {
+        judulBelumHadir.innerText = `Belum Hadir`;
+      }
+
+      // 2. Render Aktivitas Terbaru (Desain Compact)
+      let aktivitasHtml = '';
+      if (data.aktivitasTerbaru.length > 0) {
+        data.aktivitasTerbaru.forEach(absensi => {
+          // Format Waktu Masuk
+          const waktuMasuk = new Date(`1970-01-01T${absensi.waktu_masuk}`).toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          // Format Waktu Pulang (jika ada)
+          let waktuPulangHtml = '';
+          if (absensi.waktu_pulang) {
+            const waktuPulang = new Date(`1970-01-01T${absensi.waktu_pulang}`).toLocaleTimeString('id-ID', {
               hour: '2-digit',
               minute: '2-digit'
             });
-            let fotoHtml =
-              `<span class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700">${absensi.siswa.nama_siswa.substring(0, 1)}</span>`;
-            if (absensi.foto_masuk) {
-              fotoHtml =
-                `<div class="h-8 w-8 rounded-full overflow-hidden border border-green-200 cursor-pointer" onclick="Swal.fire({imageUrl: '/storage/${absensi.foto_masuk}', showConfirmButton: false})"><img src="/storage/${absensi.foto_masuk}" class="w-full h-full object-cover"></div>`;
-            }
-            aktivitasHtml +=
-              `<div class="flex items-center space-x-3">${fotoHtml}<div><p class="text-sm font-medium text-gray-900">${absensi.siswa.nama_siswa}</p><p class="text-xs text-gray-500">${absensi.siswa.kelas.nama_kelas} | ${waktu}</p></div></div>`;
-          });
-        } else {
-          aktivitasHtml = `<p class="text-sm text-gray-500">Belum ada aktivitas.</p>`;
-        }
-        document.getElementById('aktivitas-terbaru').innerHTML = aktivitasHtml;
-
-        let belumHadirHtml = '';
-        if (data.siswaBelumHadir.length > 0) {
-          data.siswaBelumHadir.forEach(siswa => {
-            const escapedNamaSiswa = siswa.nama_siswa.replace(/'/g, "\\'");
-            belumHadirHtml +=
-              `<div id="belum-hadir-${siswa.siswa_id}" class="flex items-center justify-between p-2 rounded-md hover:bg-gray-50 transition-all duration-300"><div class="flex items-center space-x-3"><span class="h-8 w-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-sm font-bold flex-shrink-0">${siswa.nama_siswa.substring(0, 1)}</span><div><p class="text-sm font-medium text-gray-900">${siswa.nama_siswa}</p><p class="text-xs text-gray-500">${siswa.kelas.nama_kelas}</p></div></div><button onclick="hadirkanManual('${siswa.siswa_id}', '${escapedNamaSiswa}')" class="px-2 py-1 bg-green-500 text-white text-xs font-semibold rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-150">Hadirkan</button></div>`;
-          });
-        } else {
-          belumHadirHtml =
-            `<div class="text-center py-8"><p class="text-sm text-gray-500">Semua siswa sudah hadir. 👍</p></div>`;
-        }
-        document.getElementById('daftar-belum-hadir').innerHTML = belumHadirHtml;
-      }
-
-      function hadirkanManual(siswaId, siswaNama) {
-        Swal.fire({
-          title: 'Konfirmasi Kehadiran',
-          html: `Anda akan menghadirkan siswa:<br><b>${siswaNama}</b><br><small>(Tanpa foto bukti)</small>`,
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonColor: '#16a34a',
-          cancelButtonColor: '#6b7280',
-          confirmButtonText: 'Ya, Hadirkan!',
-          cancelButtonText: 'Batal'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            showStatusMessage(`Memproses ${siswaNama}...`, 'success');
-            axios.post('{{ route('piket.hadirkan.manual') }}', {
-                siswa_id: siswaId,
-                _token: "{{ csrf_token() }}"
-              }, {
-                headers: {
-                  'X-Scanner-Secret': 'absen-smkn4tng-aman'
-                }
-              })
-              .then(response => {
-                showStatusMessage(response.data.message, 'success');
-                const siswaRow = document.getElementById(`belum-hadir-${siswaId}`);
-                if (siswaRow) {
-                  siswaRow.classList.add('opacity-0', 'scale-95');
-                  setTimeout(() => {
-                    axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
-                  }, 300);
-                }
-              }).catch(error => {
-                showStatusMessage(error.response.data.message, 'error');
-              });
+            waktuPulangHtml =
+              `<span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 tracking-wide" title="Waktu Pulang">&uarr; ${waktuPulang}</span>`;
           }
+
+          const inisial = absensi.siswa.nama_siswa.substring(0, 1).toUpperCase();
+          const namaKelas = absensi.siswa.kelas ? absensi.siswa.kelas.nama_kelas : '-';
+
+          // Set Avatar (Foto atau Inisial)
+          let fotoHtml =
+            `<span class="h-8 w-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm border border-emerald-200">${inisial}</span>`;
+          if (absensi.foto_masuk) {
+            fotoHtml =
+              `<div class="h-8 w-8 rounded-full overflow-hidden border border-emerald-200 flex-shrink-0 cursor-pointer shadow-sm group-hover:border-emerald-400 transition-colors" onclick="Swal.fire({imageUrl: '/storage/${absensi.foto_masuk}', showConfirmButton: false, customClass: { popup: 'rounded-2xl' }})"><img src="/storage/${absensi.foto_masuk}" alt="Foto ${absensi.siswa.nama_siswa}" class="w-full h-full object-cover"></div>`;
+          }
+
+          aktivitasHtml += `
+            <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-100 group">
+              <div class="flex items-center space-x-2.5 min-w-0 flex-1">
+                ${fotoHtml}
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-semibold text-gray-800 truncate" title="${absensi.siswa.nama_siswa}">${absensi.siswa.nama_siswa}</p>
+                  <p class="text-[11px] text-gray-500 truncate mt-0.5">${namaKelas}</p>
+                </div>
+              </div>
+              <div class="flex flex-col items-end flex-shrink-0 ml-2 space-y-1">
+                <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 tracking-wide" title="Waktu Masuk">&darr; ${waktuMasuk}</span>
+                ${waktuPulangHtml}
+              </div>
+            </div>`;
         });
+      } else {
+        aktivitasHtml = `
+          <div class="flex flex-col items-center justify-center h-full py-8 opacity-70">
+            <svg class="w-6 h-6 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <p class="text-xs font-medium text-gray-500 text-center">Belum ada aktivitas.</p>
+          </div>`;
       }
+      document.getElementById('aktivitas-terbaru').innerHTML = aktivitasHtml;
 
-      // --- LOGIKA TAB JADWAL PELAJARAN ---
-      const tabButtons = document.querySelectorAll('.tab-button');
-      const tabContents = document.querySelectorAll('.tab-content');
-      const searchInputTab = document.getElementById('jadwal-search-input');
+      // 3. Render Siswa Belum Hadir
+      let belumHadirHtml = '';
+      if (data.siswaBelumHadir.length > 0) {
+        data.siswaBelumHadir.forEach(siswa => {
+          const escapedNamaSiswa = siswa.nama_siswa.replace(/'/g, "\\'");
+          const inisial = siswa.nama_siswa.substring(0, 1).toUpperCase();
+          const namaKelas = siswa.kelas ? siswa.kelas.nama_kelas : '-';
 
-      function changeTab(tabIndex) {
-        tabButtons.forEach((button, index) => {
-          const isActive = index === tabIndex;
-          button.classList.toggle('border-indigo-500', isActive);
-          button.classList.toggle('text-indigo-600', isActive);
-          button.classList.toggle('border-transparent', !isActive);
-          button.classList.toggle('text-gray-500', !isActive);
+          belumHadirHtml += `
+            <div id="belum-hadir-${siswa.siswa_id}" class="flex items-center justify-between w-full p-2.5 rounded-lg hover:bg-gray-100 transition-all duration-300 group">
+              <div class="flex items-center space-x-3 min-w-0 flex-1 pr-3">
+                <span class="h-9 w-9 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm font-extrabold flex-shrink-0 shadow-sm border border-rose-200">${inisial}</span>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-bold text-gray-800 truncate" title="${siswa.nama_siswa}">${siswa.nama_siswa}</p>
+                  <p class="text-xs text-gray-500 truncate">${namaKelas}</p>
+                </div>
+              </div>
+              <button onclick="hadirkanManual('${siswa.siswa_id}', '${escapedNamaSiswa}')" class="flex-shrink-0 px-3 py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1 transition-all duration-200 transform hover:scale-105 opacity-90 group-hover:opacity-100">
+                Hadirkan
+              </button>
+            </div>`;
         });
-        tabContents.forEach((content, index) => {
-          content.classList.toggle('hidden', index !== tabIndex);
-        });
-        if (searchInputTab) {
-          searchInputTab.value = '';
-          searchInputTab.dispatchEvent(new Event('input'));
-        }
+      } else {
+        belumHadirHtml = `
+          <div class="flex flex-col items-center justify-center h-full py-12 opacity-80">
+            <div class="p-4 bg-emerald-50 rounded-full text-emerald-500 mb-3"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <p class="text-sm font-bold text-gray-600 text-center">Semua siswa sudah hadir.</p>
+            <p class="text-xs text-gray-400 mt-1 text-center">Kerja bagus hari ini! 🎉</p>
+          </div>`;
       }
+      document.getElementById('daftar-belum-hadir').innerHTML = belumHadirHtml;
+    }
 
-      if (searchInputTab) {
-        searchInputTab.addEventListener('input', function() {
-          const searchTerm = this.value.toLowerCase();
-          tabButtons.forEach(button => {
-            button.classList.toggle('hidden', searchTerm.length > 0 && !button.textContent.toLowerCase().includes(
-              searchTerm));
-          });
-          const activeTabContent = document.querySelector('.tab-content:not(.hidden)');
-          if (!activeTabContent) return;
-          const dayColumns = activeTabContent.querySelectorAll('.day-column');
-          dayColumns.forEach(column => {
-            const scheduleItems = column.querySelectorAll('.schedule-item');
-            let hasVisibleItems = false;
-            scheduleItems.forEach(item => {
-              const isVisible = item.textContent.toLowerCase().includes(searchTerm);
-              item.classList.toggle('hidden', !isVisible);
-              if (isVisible) hasVisibleItems = true;
+    function hadirkanManual(siswaId, siswaNama) {
+      Swal.fire({
+        title: 'Konfirmasi Kehadiran',
+        html: `Anda akan menghadirkan siswa:<br><b>${siswaNama}</b><br><small>(Tanpa foto bukti)</small>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#16a34a',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Hadirkan!',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          showStatusMessage(`Memproses ${siswaNama}...`, 'success');
+          axios.post('{{ route('piket.hadirkan.manual') }}', {
+              siswa_id: siswaId,
+              _token: "{{ csrf_token() }}"
+            }, {
+              headers: {
+                'X-Scanner-Secret': 'absen-smkn4tng-aman'
+              }
+            })
+            .then(response => {
+              showStatusMessage(response.data.message, 'success');
+              const siswaRow = document.getElementById(`belum-hadir-${siswaId}`);
+              if (siswaRow) {
+                siswaRow.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                  axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
+                }, 300);
+              }
+            }).catch(error => {
+              showStatusMessage(error.response.data.message, 'error');
             });
-            const emptyDayMessage = column.querySelector('.empty-day-message');
-            if (emptyDayMessage) emptyDayMessage.classList.toggle('hidden', searchTerm.length > 0);
-            const noResultsMessage = column.querySelector('.no-results-message');
-            if (noResultsMessage) noResultsMessage.classList.toggle('hidden', hasVisibleItems || !searchTerm
-              .length > 0);
-          });
-        });
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        if (tabContents.length > 0) {
-          tabContents.forEach((c, i) => {
-            if (i !== 0) c.classList.add('hidden');
-          });
-        }
-        if (tabButtons.length > 0) {
-          tabButtons.forEach((b, i) => {
-            if (i !== 0) {
-              b.classList.remove('border-indigo-500', 'text-indigo-600');
-              b.classList.add('border-transparent', 'text-gray-500');
-            } else {
-              b.classList.add('border-indigo-500', 'text-indigo-600');
-              b.classList.remove('border-transparent', 'text-gray-500');
-            }
-          });
         }
       });
-    </script>
-  @endpush
+    }
+  </script>
+@endpush
