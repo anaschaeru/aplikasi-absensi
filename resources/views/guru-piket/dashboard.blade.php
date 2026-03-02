@@ -6,7 +6,6 @@
   </h2>
 @endsection --}}
 
-
 @section('content')
   <div class="py-5 bg-gray-50 min-h-screen">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -14,8 +13,7 @@
       {{-- STATISTIK HARI INI --}}
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {{-- Card Total --}}
-        <div
-          class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex justify-between items-center">
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex justify-between items-center">
           <div>
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Siswa</h3>
             <p class="mt-1 text-4xl font-extrabold text-gray-800">{{ $totalSiswa }}</p>
@@ -29,8 +27,7 @@
           </div>
         </div>
         {{-- Card Hadir --}}
-        <div
-          class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex justify-between items-center">
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex justify-between items-center">
           <div>
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Sudah Hadir</h3>
             <p id="statistik-hadir" class="mt-1 text-4xl font-extrabold text-emerald-500">{{ $jumlahHadir }}</p>
@@ -43,8 +40,7 @@
           </div>
         </div>
         {{-- Card Belum Hadir --}}
-        <div
-          class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex justify-between items-center">
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex justify-between items-center">
           <div>
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Belum Hadir</h3>
             <p id="statistik-belum-hadir" class="mt-1 text-4xl font-extrabold text-rose-500">{{ $jumlahBelumHadir }}</p>
@@ -65,9 +61,7 @@
         <div class="lg:col-span-1 bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col h-[38rem]">
           <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
             <h3 id="judul-belum-hadir" class="font-bold text-gray-800 text-lg">Belum Hadir</h3>
-            <span
-              class="bg-rose-100 text-rose-600 py-1 px-3 rounded-full text-xs font-bold">{{ $siswaBelumHadir->count() }}
-              Siswa</span>
+            <span class="bg-rose-100 text-rose-600 py-1 px-3 rounded-full text-xs font-bold">{{ $siswaBelumHadir->count() }} Siswa</span>
           </div>
           <div id="daftar-belum-hadir" class="overflow-y-auto custom-scrollbar flex-1 space-y-2 pr-2">
             @include('guru-piket._siswa_belum_hadir', ['siswaBelumHadir' => $siswaBelumHadir])
@@ -75,12 +69,11 @@
         </div>
 
         {{-- Kolom 2: Area Absensi (Scanner & Kamera) --}}
-        <div
-          class="lg:col-span-1 bg-white rounded-xl shadow-md border-t-4 border-indigo-500 flex flex-col h-[38rem] relative overflow-hidden">
+        <div class="lg:col-span-1 bg-white rounded-xl shadow-md border-t-4 border-indigo-500 flex flex-col h-[38rem] relative overflow-hidden">
           <div class="p-4 flex-1 flex flex-col">
             <h3 class="font-extrabold text-xl mb-2 text-center text-gray-800 tracking-tight">Panel Absensi</h3>
 
-            {{-- INPUT ALAT SCANNER (Tidak lagi flex-1 agar tingginya pas) --}}
+            {{-- INPUT ALAT SCANNER --}}
             <div id="mode-scanner-container" class="hidden flex-col flex-none mb-2">
               <div class="relative group">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -97,18 +90,12 @@
               </div>
             </div>
 
-            {{-- PREVIEW KAMERA (Selalu Tampil, tapi teks berubah) --}}
-            <div id="mode-camera-container"
-              class="transition-all duration-300 flex-1 flex items-center justify-center mb-2 mt-2">
-              {{-- UBAH DISINI: Mengganti max-w-[15rem] menjadi max-w-[20rem] atau max-w-sm --}}
+            {{-- PREVIEW KAMERA --}}
+            <div id="mode-camera-container" class="transition-all duration-300 flex-1 flex items-center justify-center mb-2 mt-2">
               <div class="w-full max-w-[22rem] mx-auto relative group">
-                {{-- Video Element dengan Frame Modern --}}
                 <div class="p-1.5 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl shadow-lg">
-                  {{-- Frame kamera tetap persegi (aspect-square) --}}
                   <div id="reader" class="w-full aspect-square bg-black rounded-xl overflow-hidden"></div>
                 </div>
-
-                {{-- Posisi teks disesuaikan agar tidak menabrak bingkai bawah --}}
                 <div class="absolute -bottom-5 left-0 right-0 text-center z-10">
                   <span id="camera-overlay-text"
                     class="inline-block px-4 py-1.5 bg-gray-900/80 text-white text-xs font-bold rounded-full backdrop-blur-md shadow-sm border border-gray-700/50">
@@ -120,7 +107,7 @@
 
             <div id="scan-status" class="h-8 flex items-center justify-center my-2"></div>
 
-            {{-- TAB SWITCHER MODERN (Anchor di bawah) --}}
+            {{-- TAB SWITCHER --}}
             <div class="flex p-1 bg-gray-100 mb-4 rounded-lg shadow-inner mt-auto">
               <button onclick="switchMode('camera')" id="btn-mode-camera"
                 class="w-1/2 py-2 px-4 rounded-md text-sm font-bold transition-all bg-white text-indigo-600 shadow-sm ring-1 ring-black/5">
@@ -146,9 +133,7 @@
           </div>
           <div class="overflow-y-auto custom-scrollbar flex-1 pr-2">
             <div id="aktivitas-terbaru" class="space-y-0.5">
-              @include('guru-piket._aktivitas_terbaru', [
-                  'aktivitasTerbaru' => $aktivitasTerbaru,
-              ])
+              @include('guru-piket._aktivitas_terbaru', ['aktivitasTerbaru' => $aktivitasTerbaru])
             </div>
           </div>
         </div>
@@ -159,54 +144,22 @@
 @endsection
 
 @push('scripts')
-  {{-- Library QR & Axios --}}
+  {{-- Library QR, Axios & Face-API --}}
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  {{-- Library Deteksi Wajah --}}
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
   <style>
-    /* Custom Scrollbar Tipis */
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 4px;
-    }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 4px;
-    }
+    #reader video { width: 100% !important; height: auto !important; object-fit: cover !important; border-radius: 8px; }
 
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-
-    #reader video {
-      width: 100% !important;
-      height: auto !important;
-      object-fit: cover !important;
-      border-radius: 8px;
-    }
-
-    /* --- TAMBAHAN CSS UNTUK TOAST JUMBO --- */
-    .toast-besar {
-      width: 400px !important;
-      padding: 10px !important;
-      border-radius: 16px !important;
-    }
-
-    .toast-judul-besar {
-      font-size: 18px !important;
-    }
-
-    .toast-pesan-besar {
-      font-size: 26px !important;
-      font-weight: bold !important;
-    }
+    .toast-besar { width: 400px !important; padding: 10px !important; border-radius: 16px !important; }
+    .toast-judul-besar { font-size: 18px !important; }
+    .toast-pesan-besar { font-size: 20px !important; margin-top: 4px; }
   </style>
 
   <script>
@@ -217,19 +170,71 @@
     let activeMode = 'camera';
     let isFaceModelLoaded = false;
 
+    // =====================================================================
+    // --- KAMUS DATA SISWA LANGSUNG DARI DATABASE ---
+    // =====================================================================
+    const kamusSiswaNIS = @json(\App\Models\Siswa::pluck('nama_siswa', 'nis'));
+    const kamusSiswaID = @json(\App\Models\Siswa::pluck('nama_siswa', 'siswa_id'));
+
     // Konfigurasi Notifikasi Cepat
     const Toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      customClass: {
-        popup: 'toast-besar',
-        title: 'toast-judul-besar',
-        htmlContainer: 'toast-pesan-besar'
-      }
+      toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true,
+      customClass: { popup: 'toast-besar', title: 'toast-judul-besar', htmlContainer: 'toast-pesan-besar' }
     });
+
+    // ==========================================
+    // --- SISTEM ANTREAN OFFLINE ---
+    // ==========================================
+    function simpanKeAntreanLokal(url, postData, scannedText, namaSiswa = '') {
+      let antrean = JSON.parse(localStorage.getItem('antreanAbsensi')) || [];
+      antrean.push({ url: url, data: postData, id: scannedText });
+      localStorage.setItem('antreanAbsensi', JSON.stringify(antrean));
+
+      console.warn(`[OFFLINE] Data absen ${scannedText} disimpan ke memori lokal.`);
+
+      let teksToast = namaSiswa && namaSiswa !== scannedText
+          ? `<b>${namaSiswa}</b><br><span style="font-size: 14px; font-weight: normal;">Disimpan offline, menunggu internet...</span>`
+          : `<b>ID: ${scannedText}</b><br><span style="font-size: 14px; font-weight: normal;">Disimpan offline...</span>`;
+
+      Toast.fire({ icon: 'info', title: 'Tersimpan (Offline)', html: teksToast });
+
+      if (scannedText) updateDashboardLocally(scannedText);
+    }
+
+    async function sinkronisasiAntreanLokal() {
+      if (!navigator.onLine) return;
+
+      let antrean = JSON.parse(localStorage.getItem('antreanAbsensi')) || [];
+      if (antrean.length === 0) return;
+
+      console.log(`[SINKRONISASI] Mencoba mengirim ${antrean.length} data tertunda...`);
+      let itemKirim = antrean[0];
+
+      try {
+        let response = await axios.post(itemKirim.url, itemKirim.data, {
+          headers: { 'X-Scanner-Secret': 'absen-smkn4tng-aman' },
+          timeout: 5000
+        });
+
+        if (response.status === 200 || response.status === 201) {
+          antrean.shift();
+          localStorage.setItem('antreanAbsensi', JSON.stringify(antrean));
+          console.log(`[SINKRONISASI] Berhasil mengirim siswa ${itemKirim.id}`);
+          sinkronisasiAntreanLokal();
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 422) {
+          console.warn(`[SINKRONISASI] Data ditolak server. Dihapus dari antrean.`);
+          antrean.shift();
+          localStorage.setItem('antreanAbsensi', JSON.stringify(antrean));
+          sinkronisasiAntreanLokal();
+        }
+      }
+    }
+
+    setInterval(sinkronisasiAntreanLokal, 10000);
+    window.addEventListener('online', sinkronisasiAntreanLokal);
+    // ==========================================
 
     // --- 1. LOAD MODEL WAJAH ---
     async function loadFaceModels() {
@@ -244,26 +249,17 @@
         isFaceModelLoaded = true;
         showStatusMessage("Sistem Siap. Silahkan Scan.", "success");
 
-        if (inputScanner) {
-          inputScanner.disabled = false;
-          inputScanner.focus();
-        }
-      } catch (error) {
-        showStatusMessage("Gagal memuat AI Wajah.", "error");
-      }
+        if (inputScanner) { inputScanner.disabled = false; inputScanner.focus(); }
+      } catch (error) { showStatusMessage("Gagal memuat AI Wajah.", "error"); }
     }
 
     // --- 2. DETEKSI WAJAH ---
     async function checkFaceExist() {
       if (!isFaceModelLoaded) return false;
-
       const videoElement = document.querySelector('#reader video');
       if (!videoElement || videoElement.paused || videoElement.ended) return false;
 
-      const options = new faceapi.TinyFaceDetectorOptions({
-        inputSize: 160,
-        scoreThreshold: 0.4
-      });
+      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.4 });
       const detections = await faceapi.detectSingleFace(videoElement, options);
       return !!detections;
     }
@@ -281,134 +277,102 @@
 
         const context = canvas.getContext('2d');
         context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
         imageBase64 = canvas.toDataURL('image/jpeg', 0.6);
       }
       return imageBase64;
     }
 
     // --- 4. LOGIKA UTAMA ---
-    async function validateAndSubmit(nis) {
-      scanStatusContainer.innerHTML =
-        `<div class="p-2 rounded-lg bg-blue-100 text-blue-700 text-sm font-bold text-center w-full">Memproses...</div>`;
+    async function validateAndSubmit(scannedText) {
+      scanStatusContainer.innerHTML = `<div class="p-2 rounded-lg bg-blue-100 text-blue-700 text-sm font-bold text-center w-full">Memproses...</div>`;
 
       let hasFace = true;
-      if (activeMode === 'scanner') {
-        hasFace = await checkFaceExist();
-      }
+      if (activeMode === 'scanner') { hasFace = await checkFaceExist(); }
 
       const input = document.getElementById('scanner_input');
 
       if (!hasFace) {
         showStatusMessage('Wajah tidak terdeteksi!', 'error');
-        Toast.fire({
-          icon: 'warning',
-          title: 'Wajah tidak terdeteksi!'
-        });
-
-        if (input) {
-          input.value = '';
-          input.focus();
-        }
+        Toast.fire({ icon: 'warning', title: 'Wajah tidak terdeteksi!' });
+        if (input) { input.value = ''; input.focus(); }
         return;
       }
 
       let photo = capturePhoto();
-      processAbsensi(nis, photo);
+      processAbsensi(scannedText, photo);
     }
 
     // --- 5. PROSES KIRIM DATA ---
-    function processAbsensi(nis, imageBase64 = null) {
-      if (!nis || nis.trim() === "") return;
+    function processAbsensi(scannedText, imageBase64 = null) {
+      if (!scannedText || scannedText.trim() === "") return;
 
-      let namaSiswa = nis;
-      let kelasSiswa = "";
-      const rowBelumHadir = document.getElementById(`belum-hadir-${nis}`);
+      // Ambil nama dari kamus yang sudah di-generate Laravel
+      let namaSiswa = kamusSiswaNIS[scannedText] || kamusSiswaID[scannedText] || scannedText;
 
-      if (rowBelumHadir) {
-        const pElements = rowBelumHadir.querySelectorAll('p');
-        if (pElements.length >= 2) {
-          namaSiswa = pElements[0].innerText;
-          kelasSiswa = pElements[1].innerText;
-        }
+      let postData = { siswa_id: scannedText, image: imageBase64, _token: "{{ csrf_token() }}" };
+      let postUrl = '{{ route('piket.record') }}';
+
+      if (!navigator.onLine) {
+        simpanKeAntreanLokal(postUrl, postData, scannedText, namaSiswa);
+        showStatusMessage(`Offline: ${namaSiswa} Disimpan`, 'warning');
+        resetScanner();
+        return;
       }
 
-      axios.post('{{ route('piket.record') }}', {
-          siswa_id: nis,
-          image: imageBase64,
-          _token: "{{ csrf_token() }}"
-        }, {
-          headers: {
-            'X-Scanner-Secret': 'absen-smkn4tng-aman'
-          }
-        })
-        .then(response => {
-          let infoSiswa = kelasSiswa ? `${namaSiswa} (${kelasSiswa})` : namaSiswa;
-          let pesanBackend = response.data.message || 'Berhasil absen!';
+      axios.post(postUrl, postData, { headers: { 'X-Scanner-Secret': 'absen-smkn4tng-aman' }, timeout: 8000 })
+      .then(response => {
+        let namaFinal = response.data.nama_siswa || namaSiswa;
 
-          showStatusMessage(`Berhasil: ${infoSiswa}`, 'success');
-
-          Toast.fire({
-            icon: 'success',
-            text: pesanBackend
-          });
-
-          updateDashboardLocally(nis);
-        })
-        .catch(error => {
+        showStatusMessage(`Berhasil: ${namaFinal}`, 'success');
+        Toast.fire({ icon: 'success', title: 'Berhasil Absen', html: `<b style="font-size: 22px;">${namaFinal}</b>` });
+        updateDashboardLocally(scannedText);
+      })
+      .catch(error => {
+        if (!error.response || error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED') {
+          simpanKeAntreanLokal(postUrl, postData, scannedText, namaSiswa);
+          showStatusMessage(`Jaringan lambat, dialihkan offline`, 'warning');
+        } else {
           let msg = 'Terjadi kesalahan sistem';
-
-          if (error.response) {
-            if (error.response.status === 422 && error.response.data.errors) {
-              const validationErrors = error.response.data.errors;
-              msg = Object.values(validationErrors)[0][0];
-            } else {
-              msg = error.response.data.message || msg;
-            }
+          if (error.response.status === 422 && error.response.data.errors) {
+            msg = Object.values(error.response.data.errors)[0][0];
+          } else {
+            msg = error.response.data.message || msg;
           }
-
           showStatusMessage(msg, 'error');
-          Toast.fire({
-            icon: 'error',
-            title: msg
-          });
-        })
-        .finally(() => {
-          if (activeMode === 'camera' && html5QrCode) {
-            setTimeout(() => {
-              isScanning = true;
-              html5QrCode.resume();
-            }, 300);
-          }
+          Toast.fire({ icon: 'error', title: 'Gagal Absen', html: `<span style="font-size:16px;">${msg}</span>` });
+        }
+      })
+      .finally(() => { resetScanner(); });
+    }
 
-          if (activeMode === 'scanner') {
-            const input = document.getElementById('scanner_input');
-            if (input) {
-              input.value = '';
-              input.focus();
-            }
-          }
-        });
+    function resetScanner() {
+      if (activeMode === 'camera' && html5QrCode) {
+        setTimeout(() => { isScanning = true; html5QrCode.resume(); }, 300);
+      }
+      if (activeMode === 'scanner') {
+        const input = document.getElementById('scanner_input');
+        if (input) { input.value = ''; input.focus(); }
+      }
     }
 
     // --- FUNGSI UPDATE UI LOKAL ---
-    function updateDashboardLocally(nis) {
-      const rowBelumHadir = document.getElementById(`belum-hadir-${nis}`);
+    function updateDashboardLocally(scannedText) {
+      const rowBelumHadir = document.getElementById(`belum-hadir-${scannedText}`);
       if (rowBelumHadir) {
         rowBelumHadir.remove();
-
         let statHadir = document.getElementById('statistik-hadir');
         let statBelum = document.getElementById('statistik-belum-hadir');
-
         statHadir.innerText = parseInt(statHadir.innerText) + 1;
         let sisa = parseInt(statBelum.innerText) - 1;
         statBelum.innerText = sisa < 0 ? 0 : sisa;
       }
     }
 
-    // --- SINKRONISASI LATAR BELAKANG ---
+    // --- SINKRONISASI LATAR BELAKANG DASHBOARD ---
     setInterval(() => {
-      axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
+      if (navigator.onLine) {
+          axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data)).catch(e => {});
+      }
     }, 30000);
 
     // --- 6. EVENT LISTENER SCANNER GUN ---
@@ -417,14 +381,10 @@
       scannerInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
           e.preventDefault();
-          const nis = this.value.trim();
-          if (nis.length > 0) {
-            this.value = '';
-            validateAndSubmit(nis);
-          }
+          const scannedText = this.value.trim();
+          if (scannedText.length > 0) { this.value = ''; validateAndSubmit(scannedText); }
         }
       });
-
       document.getElementById('mode-scanner-container').addEventListener('click', () => scannerInput.focus());
       document.addEventListener('click', (e) => {
         if (activeMode === 'scanner' && e.target.id !== 'scanner_input' && !e.target.closest('button')) {
@@ -439,38 +399,23 @@
       const btnCamera = document.getElementById('btn-mode-camera');
       const btnScanner = document.getElementById('btn-mode-scanner');
       const scannerContainer = document.getElementById('mode-scanner-container');
-      const cameraContainer = document.getElementById('mode-camera-container');
-      const scannerInput = document.getElementById('scanner_input');
       const overlayText = document.getElementById('camera-overlay-text');
 
       const activeClass = ['bg-white', 'text-indigo-600', 'shadow-sm'];
       const inactiveClass = ['text-gray-500', 'hover:text-gray-700'];
 
-      // KAMERA TETAP TAMPIL DI KEDUA MODE, hanya merubah status tampilan Input dan Teks
       if (mode === 'camera') {
-        btnCamera.classList.add(...activeClass);
-        btnCamera.classList.remove(...inactiveClass);
-        btnScanner.classList.remove(...activeClass);
-        btnScanner.classList.add(...inactiveClass);
-
-        scannerContainer.classList.remove('flex');
-        scannerContainer.classList.add('hidden');
-
+        btnCamera.classList.add(...activeClass); btnCamera.classList.remove(...inactiveClass);
+        btnScanner.classList.remove(...activeClass); btnScanner.classList.add(...inactiveClass);
+        scannerContainer.classList.remove('flex'); scannerContainer.classList.add('hidden');
         overlayText.textContent = "Arahkan QR ke Kamera";
-        overlayText.className =
-          "inline-block px-3 py-1.5 bg-gray-900/80 text-white text-xs font-medium rounded-full backdrop-blur-md shadow-sm border border-gray-700/50";
+        overlayText.className = "inline-block px-3 py-1.5 bg-gray-900/80 text-white text-xs font-medium rounded-full backdrop-blur-md shadow-sm border border-gray-700/50";
       } else {
-        btnScanner.classList.add(...activeClass);
-        btnScanner.classList.remove(...inactiveClass);
-        btnCamera.classList.remove(...activeClass);
-        btnCamera.classList.add(...inactiveClass);
-
-        scannerContainer.classList.remove('hidden');
-        scannerContainer.classList.add('flex');
-
+        btnScanner.classList.add(...activeClass); btnScanner.classList.remove(...inactiveClass);
+        btnCamera.classList.remove(...activeClass); btnCamera.classList.add(...inactiveClass);
+        scannerContainer.classList.remove('hidden'); scannerContainer.classList.add('flex');
         overlayText.textContent = "Deteksi Wajah Aktif";
-        overlayText.className =
-          "inline-block px-3 py-1.5 bg-indigo-600/90 text-white text-xs font-medium rounded-full backdrop-blur-md shadow-sm border border-indigo-400";
+        overlayText.className = "inline-block px-3 py-1.5 bg-indigo-600/90 text-white text-xs font-medium rounded-full backdrop-blur-md shadow-sm border border-indigo-400";
         setTimeout(() => scannerInput.focus(), 200);
       }
     }
@@ -484,14 +429,7 @@
 
     function startCamera() {
       if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
-      const config = {
-        fps: 15,
-        qrbox: {
-          width: 250,
-          height: 250
-        },
-        aspectRatio: 1.0
-      };
+      const config = { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
       Html5Qrcode.getCameras().then(devices => {
         if (devices && devices.length) {
           html5QrCode.start(devices[0].id, config, onScanSuccess).catch(err => console.log(err));
@@ -503,60 +441,40 @@
 
     function showStatusMessage(message, type = 'success') {
       clearTimeout(statusTimeout);
-      let color = type === 'success' ? 'bg-green-100 text-green-700' : (type === 'warning' ?
-        'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700');
-      scanStatusContainer.innerHTML =
-        `<div class="p-2 w-full rounded-lg ${color} text-sm font-medium text-center truncate">${message}</div>`;
+      let color = type === 'success' ? 'bg-green-100 text-green-700' : (type === 'warning' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700');
+      scanStatusContainer.innerHTML = `<div class="p-2 w-full rounded-lg ${color} text-sm font-medium text-center truncate">${message}</div>`;
       statusTimeout = setTimeout(() => scanStatusContainer.innerHTML = '', 3000);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      loadFaceModels();
-      startCamera();
-      switchMode('scanner');
+      loadFaceModels(); startCamera(); switchMode('scanner');
     });
 
-    // Render Dashboard (Sinkronisasi Latar Belakang)
+    // --- RENDER DASHBOARD ---
     function renderDashboard(data) {
-      // 1. Update Statistik Angka
       document.getElementById('statistik-hadir').textContent = data.jumlahHadir;
       document.getElementById('statistik-belum-hadir').textContent = data.jumlahBelumHadir;
 
       const judulBelumHadir = document.getElementById('judul-belum-hadir');
-      if (judulBelumHadir) {
-        judulBelumHadir.innerText = `Belum Hadir`;
-      }
+      if (judulBelumHadir) { judulBelumHadir.innerText = `Belum Hadir`; }
 
-      // 2. Render Aktivitas Terbaru (Desain Compact)
       let aktivitasHtml = '';
       if (data.aktivitasTerbaru.length > 0) {
         data.aktivitasTerbaru.forEach(absensi => {
-          // Format Waktu Masuk
-          const waktuMasuk = new Date(`1970-01-01T${absensi.waktu_masuk}`).toLocaleTimeString('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit'
-          });
+          const waktuMasuk = new Date(`1970-01-01T${absensi.waktu_masuk}`).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-          // Format Waktu Pulang (jika ada)
           let waktuPulangHtml = '';
           if (absensi.waktu_pulang) {
-            const waktuPulang = new Date(`1970-01-01T${absensi.waktu_pulang}`).toLocaleTimeString('id-ID', {
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-            waktuPulangHtml =
-              `<span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 tracking-wide" title="Waktu Pulang">&uarr; ${waktuPulang}</span>`;
+            const waktuPulang = new Date(`1970-01-01T${absensi.waktu_pulang}`).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            waktuPulangHtml = `<span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 tracking-wide" title="Waktu Pulang">&uarr; ${waktuPulang}</span>`;
           }
 
           const inisial = absensi.siswa.nama_siswa.substring(0, 1).toUpperCase();
           const namaKelas = absensi.siswa.kelas ? absensi.siswa.kelas.nama_kelas : '-';
 
-          // Set Avatar (Foto atau Inisial)
-          let fotoHtml =
-            `<span class="h-8 w-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm border border-emerald-200">${inisial}</span>`;
+          let fotoHtml = `<span class="h-8 w-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm border border-emerald-200">${inisial}</span>`;
           if (absensi.foto_masuk) {
-            fotoHtml =
-              `<div class="h-8 w-8 rounded-full overflow-hidden border border-emerald-200 flex-shrink-0 cursor-pointer shadow-sm group-hover:border-emerald-400 transition-colors" onclick="Swal.fire({imageUrl: '/storage/${absensi.foto_masuk}', showConfirmButton: false, customClass: { popup: 'rounded-2xl' }})"><img src="/storage/${absensi.foto_masuk}" alt="Foto ${absensi.siswa.nama_siswa}" class="w-full h-full object-cover"></div>`;
+            fotoHtml = `<div class="h-8 w-8 rounded-full overflow-hidden border border-emerald-200 flex-shrink-0 cursor-pointer shadow-sm group-hover:border-emerald-400 transition-colors" onclick="Swal.fire({imageUrl: '/storage/${absensi.foto_masuk}', showConfirmButton: false, customClass: { popup: 'rounded-2xl' }})"><img src="/storage/${absensi.foto_masuk}" alt="Foto ${absensi.siswa.nama_siswa}" class="w-full h-full object-cover"></div>`;
           }
 
           aktivitasHtml += `
@@ -583,7 +501,6 @@
       }
       document.getElementById('aktivitas-terbaru').innerHTML = aktivitasHtml;
 
-      // 3. Render Siswa Belum Hadir
       let belumHadirHtml = '';
       if (data.siswaBelumHadir.length > 0) {
         data.siswaBelumHadir.forEach(siswa => {
@@ -616,6 +533,7 @@
       document.getElementById('daftar-belum-hadir').innerHTML = belumHadirHtml;
     }
 
+    // --- HADIRKAN MANUAL ---
     function hadirkanManual(siswaId, siswaNama) {
       Swal.fire({
         title: 'Konfirmasi Kehadiran',
@@ -629,25 +547,26 @@
       }).then((result) => {
         if (result.isConfirmed) {
           showStatusMessage(`Memproses ${siswaNama}...`, 'success');
-          axios.post('{{ route('piket.hadirkan.manual') }}', {
-              siswa_id: siswaId,
-              _token: "{{ csrf_token() }}"
-            }, {
-              headers: {
-                'X-Scanner-Secret': 'absen-smkn4tng-aman'
-              }
-            })
+
+          let postData = { siswa_id: siswaId, _token: "{{ csrf_token() }}" };
+          let postUrl = '{{ route('piket.hadirkan.manual') }}';
+
+          if (!navigator.onLine) {
+              simpanKeAntreanLokal(postUrl, postData, siswaId, siswaNama);
+              return;
+          }
+
+          axios.post(postUrl, postData, { headers: { 'X-Scanner-Secret': 'absen-smkn4tng-aman' }, timeout: 8000 })
             .then(response => {
               showStatusMessage(response.data.message, 'success');
-              const siswaRow = document.getElementById(`belum-hadir-${siswaId}`);
-              if (siswaRow) {
-                siswaRow.classList.add('opacity-0', 'scale-95');
-                setTimeout(() => {
-                  axios.get('{{ route('piket.dashboard.data') }}').then(res => renderDashboard(res.data));
-                }, 300);
-              }
+              updateDashboardLocally(siswaId);
             }).catch(error => {
-              showStatusMessage(error.response.data.message, 'error');
+              if (!error.response || error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED') {
+                 simpanKeAntreanLokal(postUrl, postData, siswaId, siswaNama);
+                 showStatusMessage(`Jaringan lambat, dialihkan offline`, 'warning');
+              } else {
+                 showStatusMessage(error.response.data.message, 'error');
+              }
             });
         }
       });
